@@ -6,7 +6,9 @@
 set -euo pipefail
 
 ARCADEDB_URL="${ARCADEDB_URL:-http://localhost:2480}"
-AUTH="root:arcadedb"
+ARCADEDB_USER="${ARCADEDB_USER:-root}"
+ARCADEDB_PASS="${ARCADEDB_PASS:-arcadedb}"
+AUTH="${ARCADEDB_USER}:${ARCADEDB_PASS}"
 DB="RecommendationEngine"
 QUERY_URL="${ARCADEDB_URL}/api/v1/query/${DB}"
 

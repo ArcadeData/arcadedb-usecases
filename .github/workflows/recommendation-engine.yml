@@ -13,6 +13,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -61,7 +64,7 @@ jobs:
         if: matrix.runner == 'java'
         working-directory: recommendation-engine/java
         run: |
-          mvn package -q
+          mvn package --no-transfer-progress
           java -jar target/recommendation-engine.jar
 
       - name: Teardown
