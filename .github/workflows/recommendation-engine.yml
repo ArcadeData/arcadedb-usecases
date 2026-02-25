@@ -1,0 +1,70 @@
+name: Recommendation Engine CI
+
+on:
+  push:
+    paths:
+      - recommendation-engine/**
+      - .github/workflows/recommendation-engine.yml
+  pull_request:
+    paths:
+      - recommendation-engine/**
+      - .github/workflows/recommendation-engine.yml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [curl, java]
+
+    env:
+      ARCADEDB_URL: http://localhost:2480
+      ARCADEDB_USER: root
+      ARCADEDB_PASS: arcadedb
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Java
+        if: matrix.runner == 'java'
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven repository
+        if: matrix.runner == 'java'
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('recommendation-engine/java/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+
+      - name: Start ArcadeDB
+        working-directory: recommendation-engine
+        run: docker compose up -d
+
+      - name: Setup database
+        working-directory: recommendation-engine
+        run: ./setup.sh
+
+      - name: Run curl queries
+        if: matrix.runner == 'curl'
+        working-directory: recommendation-engine
+        run: ./queries/queries.sh
+
+      - name: Build and run Java
+        if: matrix.runner == 'java'
+        working-directory: recommendation-engine/java
+        run: |
+          mvn package -q
+          java -jar target/recommendation-engine.jar
+
+      - name: Teardown
+        if: always()
+        working-directory: recommendation-engine
+        run: docker compose down
