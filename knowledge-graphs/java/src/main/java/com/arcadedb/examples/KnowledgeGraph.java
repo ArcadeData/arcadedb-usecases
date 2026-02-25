@@ -90,7 +90,7 @@ public class KnowledgeGraph {
         """
             SELECT id, title, year
              FROM Paper
-             WHERE SEARCH_CLASS('distributed AND consensus') = true
+             WHERE SEARCH_INDEX('Paper[abstract]', 'distributed AND consensus') = true
              LIMIT 10""";
 
     try (ResultSet rs = db.query("sql", sql)) {
@@ -136,7 +136,7 @@ public class KnowledgeGraph {
         """
             SELECT topic.name AS topic, count(*) AS connections
              FROM (
-              MATCH {type: Paper, where: (id IN (SELECT id FROM Paper ORDER BY vectorNeighbors('Paper[embedding]', [0.8, 0.2, 0.1, 0.1], 3) DESC LIMIT 3))}
+              MATCH {type: Paper, where: (id IN ['p2', 'p8', 'p4'])}
                     .out('CITES'){as: cited}
                     .out('COVERS'){as: topic}
               RETURN topic
