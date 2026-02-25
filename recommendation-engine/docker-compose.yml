@@ -4,7 +4,7 @@ services:
     ports:
       - "2480:2480"
     environment:
-      ARCADEDB_SERVER_ROOTPASSWORD: arcadedb
+      JAVA_OPTS: "-Darcadedb.server.rootPassword=arcadedb"
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:2480/api/v1/ready"]
       interval: 5s
