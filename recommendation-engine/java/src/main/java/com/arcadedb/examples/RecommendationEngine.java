@@ -107,8 +107,8 @@ public class RecommendationEngine {
             "  FROM (" +
             "    MATCH {type: User, where: (id = 'u1')}" +
             "          .out('WATCHED'){as: show}" +
-            "          .in('WATCHED'){as: viewer, where: (id \!= 'u1')}" +
-            "          .out('WATCHED'){as: rec, where: ($matched.show \!= @this)}" +
+            "          .in('WATCHED'){as: viewer, where: (id != 'u1')}" +
+            "          .out('WATCHED'){as: rec, where: ($matched.show != @this)}" +
             "    RETURN rec, viewer" +
             "  ) GROUP BY rec" +
             ")" +
