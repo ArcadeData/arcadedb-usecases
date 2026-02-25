@@ -40,10 +40,10 @@ echo "Find products semantically similar to the Laptop embedding [0.9,0.1,0.1,0.
 echo ""
 query "sql" "
 SELECT name, category, price,
-       vectorDistance(embedding, [0.9, 0.1, 0.1, 0.1]) AS distance
+       vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 20) AS similarity
 FROM Product
 WHERE inStock = true
-ORDER BY distance ASC
+ORDER BY similarity DESC
 LIMIT 20
 "
 
@@ -78,8 +78,8 @@ LET \$collab = (
 )
 SELECT rec.title, rec.genre,
   collab_score,
-  vectorDistance(rec.embedding, [0.9, 0.1, 0.1, 0.1]) AS similarity,
-  (0.6 * collab_score + 0.4 * (1 - similarity)) AS final_score
+  vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 10) AS similarity,
+  (0.6 * collab_score + 0.4 * similarity) AS final_score
 FROM \$collab
 ORDER BY final_score DESC
 LIMIT 10
@@ -91,12 +91,11 @@ echo "=== Query 5: E-Commerce Personalized Category Page ==="
 echo "Rank Electronics products for u1 by vector relevance + trending interactions."
 echo ""
 query "cypher" "
-MATCH (u:User {id: 'u1'})
 MATCH (p:Product)
 WHERE p.category = 'Electronics'
   AND p.inStock = true
 RETURN p.name, p.price,
-  vectorDistance(p.embedding, u.embedding) AS relevance
-ORDER BY relevance ASC
+  vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 30) AS relevance
+ORDER BY relevance DESC
 LIMIT 30
 "
