@@ -8,6 +8,12 @@
 
 **Tech Stack:** ArcadeDB 26.2.1, Docker Compose, Maven 3.x, Java 17+, `com.arcadedb:arcadedb-network:26.2.1`, `jq` (for setup script)
 
+> **Implementation notes (deviations from this plan discovered during execution):**
+> - `ARCADEDB_SERVER_ROOTPASSWORD` env var not picked up by 26.2.1 Docker image; replaced with `JAVA_OPTS: "-Darcadedb.server.rootPassword=arcadedb"`
+> - `vectorDistance()` does not exist in 26.2.1; replaced with `vectorNeighbors('TypeName[property]', vector, k)` (requires an `LSM_VECTOR` index)
+> - `LET $var = (SELECT ... GROUP BY ...)` syntax not supported; Query 4 simplified to a plain MATCH-based graph traversal (collaborative filtering for shows)
+> - Vector indexes require the full index name `TypeName[propertyName]` as the first argument to `vectorNeighbors()`
+
 ---
 
 ### Task 1: Scaffold the directory structure

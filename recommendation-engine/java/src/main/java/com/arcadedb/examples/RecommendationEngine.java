@@ -102,10 +102,10 @@ public class RecommendationEngine {
         }
     }
 
-    // Query 4: Multi-Model Hybrid — Streaming Platform
+    // Query 4: Graph Traversal — Streaming Platform
     private static void runQuery4StreamingHybrid(RemoteDatabase db) {
-        printHeader("Query 4: Multi-Model Hybrid — Streaming Platform",
-            "Recommend shows to u1 blending collaborative signal + vector similarity.");
+        printHeader("Query 4: Graph Traversal — Streaming Platform",
+            "Recommend shows to u1 based on what users with shared watch history also watched.");
 
         String sql =
             "SELECT title, genre, count(*) AS collab_score" +

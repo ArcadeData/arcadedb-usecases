@@ -61,8 +61,8 @@ LIMIT 10
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Query 4: Multi-Model Hybrid — Streaming Platform ==="
-echo "Recommend shows to u1 blending collaborative signal + vector similarity."
+echo "=== Query 4: Graph Traversal — Streaming Platform ==="
+echo "Recommend shows to u1 based on what users with shared watch history also watched."
 echo ""
 query "sql" "
 SELECT title, genre, count(*) AS collab_score
@@ -81,7 +81,7 @@ LIMIT 10
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
 echo "=== Query 5: E-Commerce Personalized Category Page ==="
-echo "Rank Electronics products for u1 by vector relevance + trending interactions."
+echo "Rank Electronics products for u1 by vector relevance to their preference embedding."
 echo ""
 query "sql" "
 SELECT name, category, price

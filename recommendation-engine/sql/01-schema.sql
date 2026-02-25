@@ -19,5 +19,5 @@ CREATE DOCUMENT TYPE ProductInteraction IF NOT EXISTS;
 CREATE PROPERTY ProductInteraction.productId IF NOT EXISTS STRING;
 CREATE PROPERTY ProductInteraction.purchaseCount IF NOT EXISTS LONG;
 CREATE PROPERTY ProductInteraction.ts IF NOT EXISTS DATETIME;
-CREATE INDEX ON Product (embedding) LSM_VECTOR METADATA { dimensions: 4, similarity: 'COSINE' };
-CREATE INDEX ON Show (embedding) LSM_VECTOR METADATA { dimensions: 4, similarity: 'COSINE' };
+CREATE INDEX IF NOT EXISTS ON Product (embedding) LSM_VECTOR METADATA { dimensions: 4, similarity: 'COSINE' };
+CREATE INDEX IF NOT EXISTS ON Show (embedding) LSM_VECTOR METADATA { dimensions: 4, similarity: 'COSINE' };

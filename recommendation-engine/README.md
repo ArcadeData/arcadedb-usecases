@@ -62,7 +62,7 @@ java -jar target/recommendation-engine.jar
 | 1 | Collaborative Filtering | Cypher | Graph |
 | 2 | Vector Similarity Search | SQL + vectorNeighbors | Vector |
 | 3 | Trending Detection | SQL | Time-series |
-| 4 | Multi-Model Hybrid (Streaming) | SQL + MATCH | Graph + Vector |
+| 4 | Graph Traversal (Streaming) | SQL + MATCH | Graph |
 | 5 | Personalized Category Page | SQL + vectorNeighbors | Vector |
 
 ## Sample Data
