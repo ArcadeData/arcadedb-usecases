@@ -14,13 +14,21 @@ public class RecommendationEngine {
 
     public static void main(String[] args) {
         try (RemoteDatabase db = new RemoteDatabase(HOST, PORT, DB_NAME, USER, PASSWORD)) {
-            runQuery1CollaborativeFiltering(db);
-            runQuery2VectorSimilarity(db);
-            runQuery3Trending(db);
-            runQuery4StreamingHybrid(db);
-            runQuery5EcommerceCategory(db);
+            tryRun(() -> runQuery1CollaborativeFiltering(db), "Query 1");
+            tryRun(() -> runQuery2VectorSimilarity(db), "Query 2");
+            tryRun(() -> runQuery3Trending(db), "Query 3");
+            tryRun(() -> runQuery4StreamingHybrid(db), "Query 4");
+            tryRun(() -> runQuery5EcommerceCategory(db), "Query 5");
         }
         System.out.println("\nAll queries complete.");
+    }
+
+    private static void tryRun(Runnable r, String name) {
+        try {
+            r.run();
+        } catch (Exception e) {
+            System.err.println("[" + name + " FAILED] " + e.getMessage());
+        }
     }
 
     // Query 1: Collaborative Filtering via Graph Traversal
@@ -56,20 +64,20 @@ public class RecommendationEngine {
 
         String sql =
             "SELECT name, category, price," +
-            "       vectorDistance(embedding, [0.9, 0.1, 0.1, 0.1]) AS distance" +
+            "       vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 20) AS similarity" +
             " FROM Product" +
             " WHERE inStock = true" +
-            " ORDER BY distance ASC" +
+            " ORDER BY similarity DESC" +
             " LIMIT 20";
 
         try (ResultSet rs = db.query("sql", sql)) {
             while (rs.hasNext()) {
                 Result r = rs.next();
-                System.out.printf("  %-20s | %-15s | $%-8.2f | distance: %.4f%n",
+                System.out.printf("  %-20s | %-15s | $%-8.2f | similarity: %.4f%n",
                     r.getProperty("name"),
                     r.getProperty("category"),
                     ((Number) r.getProperty("price")).doubleValue(),
-                    ((Number) r.getProperty("distance")).doubleValue());
+                    ((Number) r.getProperty("similarity")).doubleValue());
             }
         }
     }
@@ -114,8 +122,8 @@ public class RecommendationEngine {
             ")" +
             " SELECT rec.title, rec.genre," +
             "   collab_score," +
-            "   vectorDistance(rec.embedding, [0.9, 0.1, 0.1, 0.1]) AS similarity," +
-            "   (0.6 * collab_score + 0.4 * (1 - similarity)) AS final_score" +
+            "   vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 10) AS similarity," +
+            "   (0.6 * collab_score + 0.4 * similarity) AS final_score" +
             " FROM $collab" +
             " ORDER BY final_score DESC" +
             " LIMIT 10";
@@ -138,13 +146,12 @@ public class RecommendationEngine {
             "Rank Electronics products for u1 by vector relevance.");
 
         String cypher =
-            "MATCH (u:User {id: 'u1'})" +
-            " MATCH (p:Product)" +
+            "MATCH (p:Product)" +
             " WHERE p.category = 'Electronics'" +
             "   AND p.inStock = true" +
             " RETURN p.name, p.price," +
-            "   vectorDistance(p.embedding, u.embedding) AS relevance" +
-            " ORDER BY relevance ASC" +
+            "   vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 30) AS relevance" +
+            " ORDER BY relevance DESC" +
             " LIMIT 30";
 
         try (ResultSet rs = db.query("cypher", cypher)) {
