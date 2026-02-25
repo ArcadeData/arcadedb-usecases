@@ -63,21 +63,19 @@ public class RecommendationEngine {
             "Find products similar to the Laptop embedding [0.9, 0.1, 0.1, 0.1].");
 
         String sql =
-            "SELECT name, category, price," +
-            "       vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 20) AS similarity" +
+            "SELECT name, category, price" +
             " FROM Product" +
             " WHERE inStock = true" +
-            " ORDER BY similarity DESC" +
+            " ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 20) DESC" +
             " LIMIT 20";
 
         try (ResultSet rs = db.query("sql", sql)) {
             while (rs.hasNext()) {
                 Result r = rs.next();
-                System.out.printf("  %-20s | %-15s | $%-8.2f | similarity: %.4f%n",
+                System.out.printf("  %-20s | %-15s | $%-8.2f%n",
                     r.getProperty("name"),
                     r.getProperty("category"),
-                    ((Number) r.getProperty("price")).doubleValue(),
-                    ((Number) r.getProperty("similarity")).doubleValue());
+                    ((Number) r.getProperty("price")).doubleValue());
             }
         }
     }
@@ -110,32 +108,24 @@ public class RecommendationEngine {
             "Recommend shows to u1 blending collaborative signal + vector similarity.");
 
         String sql =
-            "LET $collab = (" +
-            "  SELECT rec, count(DISTINCT viewer) AS collab_score" +
-            "  FROM (" +
-            "    MATCH {type: User, where: (id = 'u1')}" +
-            "          .out('WATCHED'){as: show}" +
-            "          .in('WATCHED'){as: viewer, where: (id != 'u1')}" +
-            "          .out('WATCHED'){as: rec, where: ($matched.show != @this)}" +
-            "    RETURN rec, viewer" +
-            "  ) GROUP BY rec" +
-            ")" +
-            " SELECT rec.title, rec.genre," +
-            "   collab_score," +
-            "   vectorNeighbors('Show[embedding]', [0.9, 0.1, 0.1, 0.1], 10) AS similarity," +
-            "   (0.6 * collab_score + 0.4 * similarity) AS final_score" +
-            " FROM $collab" +
-            " ORDER BY final_score DESC" +
+            "SELECT title, genre, count(*) AS collab_score" +
+            " FROM (" +
+            "  MATCH {type: User, where: (id = 'u1')}" +
+            "        .out('WATCHED'){as: show}" +
+            "        .in('WATCHED'){as: viewer, where: (id != 'u1')}" +
+            "        .out('WATCHED'){as: rec, where: ($matched.show != @this)}" +
+            "  RETURN rec.title AS title, rec.genre AS genre" +
+            " ) GROUP BY title, genre" +
+            " ORDER BY collab_score DESC" +
             " LIMIT 10";
 
         try (ResultSet rs = db.query("sql", sql)) {
             while (rs.hasNext()) {
                 Result r = rs.next();
-                System.out.printf("  %-20s | %-15s | collab: %s | score: %.4f%n",
-                    r.getProperty("rec.title"),
-                    r.getProperty("rec.genre"),
-                    r.getProperty("collab_score"),
-                    ((Number) r.getProperty("final_score")).doubleValue());
+                System.out.printf("  %-20s | %-15s | collab_score: %s%n",
+                    r.getProperty("title"),
+                    r.getProperty("genre"),
+                    r.getProperty("collab_score"));
             }
         }
     }
@@ -145,22 +135,21 @@ public class RecommendationEngine {
         printHeader("Query 5: E-Commerce Personalized Category Page",
             "Rank Electronics products for u1 by vector relevance.");
 
-        String cypher =
-            "MATCH (p:Product)" +
-            " WHERE p.category = 'Electronics'" +
-            "   AND p.inStock = true" +
-            " RETURN p.name, p.price," +
-            "   vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 30) AS relevance" +
-            " ORDER BY relevance DESC" +
+        String sql =
+            "SELECT name, category, price" +
+            " FROM Product" +
+            " WHERE category = 'Electronics'" +
+            "   AND inStock = true" +
+            " ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 30) DESC" +
             " LIMIT 30";
 
-        try (ResultSet rs = db.query("cypher", cypher)) {
+        try (ResultSet rs = db.query("sql", sql)) {
             while (rs.hasNext()) {
                 Result r = rs.next();
-                System.out.printf("  %-20s | $%-8.2f | relevance: %.4f%n",
-                    r.getProperty("p.name"),
-                    ((Number) r.getProperty("p.price")).doubleValue(),
-                    ((Number) r.getProperty("relevance")).doubleValue());
+                System.out.printf("  %-20s | %-15s | $%-8.2f%n",
+                    r.getProperty("name"),
+                    r.getProperty("category"),
+                    ((Number) r.getProperty("price")).doubleValue());
             }
         }
     }

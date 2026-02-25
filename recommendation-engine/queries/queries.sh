@@ -39,11 +39,10 @@ echo "=== Query 2: Vector Similarity Search ==="
 echo "Find products semantically similar to the Laptop embedding [0.9,0.1,0.1,0.1]."
 echo ""
 query "sql" "
-SELECT name, category, price,
-       vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 20) AS similarity
+SELECT name, category, price
 FROM Product
 WHERE inStock = true
-ORDER BY similarity DESC
+ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 20) DESC
 LIMIT 20
 "
 
@@ -66,22 +65,16 @@ echo "=== Query 4: Multi-Model Hybrid — Streaming Platform ==="
 echo "Recommend shows to u1 blending collaborative signal + vector similarity."
 echo ""
 query "sql" "
-LET \$collab = (
-  SELECT rec, count(DISTINCT viewer) AS collab_score
-  FROM (
-    MATCH {type: User, where: (id = 'u1')}
-          .out('WATCHED'){as: show}
-          .in('WATCHED'){as: viewer, where: (id \!= 'u1')}
-          .out('WATCHED'){as: rec, where: (\$matched.show \!= @this)}
-    RETURN rec, viewer
-  ) GROUP BY rec
+SELECT title, genre, count(*) AS collab_score
+FROM (
+  MATCH {type: User, where: (id = 'u1')}
+        .out('WATCHED'){as: show}
+        .in('WATCHED'){as: viewer, where: (id != 'u1')}
+        .out('WATCHED'){as: rec, where: (\$matched.show != @this)}
+  RETURN rec.title AS title, rec.genre AS genre
 )
-SELECT rec.title, rec.genre,
-  collab_score,
-  vectorNeighbors('Show[embedding]', [0.9, 0.1, 0.1, 0.1], 10) AS similarity,
-  (0.6 * collab_score + 0.4 * similarity) AS final_score
-FROM \$collab
-ORDER BY final_score DESC
+GROUP BY title, genre
+ORDER BY collab_score DESC
 LIMIT 10
 "
 
@@ -90,12 +83,11 @@ echo ""
 echo "=== Query 5: E-Commerce Personalized Category Page ==="
 echo "Rank Electronics products for u1 by vector relevance + trending interactions."
 echo ""
-query "cypher" "
-MATCH (p:Product)
-WHERE p.category = 'Electronics'
-  AND p.inStock = true
-RETURN p.name, p.price,
-  vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 30) AS relevance
-ORDER BY relevance DESC
+query "sql" "
+SELECT name, category, price
+FROM Product
+WHERE category = 'Electronics'
+  AND inStock = true
+ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 30) DESC
 LIMIT 30
 "
