@@ -64,7 +64,7 @@ java -jar target/knowledge-graph.jar
 |---|---------|----------|--------|
 | 1 | Co-authorship Network | Cypher | Graph |
 | 2 | Semantic Paper Search | SQL + vectorNeighbors | Vector |
-| 3 | Full-Text Abstract Search | SQL + SEARCH_CLASS | Full-text |
+| 3 | Full-Text Abstract Search | SQL + SEARCH_INDEX | Full-text |
 | 4 | Trending Papers | SQL | Time-series |
 | 5 | GraphRAG Hybrid | SQL + MATCH | Graph + Vector |
 
@@ -79,7 +79,7 @@ java -jar target/knowledge-graph.jar
 
 This use case targets ArcadeDB **26.2.1**. Vector similarity uses
 `vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR` index.
-Full-text search uses `SEARCH_CLASS('query')` against a `FULL_TEXT` index on
+Full-text search uses `SEARCH_INDEX('Paper[abstract]', 'query')` against a `FULL_TEXT` index on
 `Paper(abstract)`.
 
 ## Reference
