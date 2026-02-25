@@ -1,4 +1,4 @@
-#\!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 ARCADEDB_URL="${ARCADEDB_URL:-http://localhost:2480}"
