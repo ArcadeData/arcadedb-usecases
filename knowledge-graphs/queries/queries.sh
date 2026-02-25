@@ -76,6 +76,8 @@ LIMIT 10
 echo ""
 echo "=== Query 5: GraphRAG Hybrid (Vector Seed + Citation Expansion) ==="
 echo "Find topics reachable via citation graph from papers most similar to [0.8, 0.2, 0.1, 0.1]."
+echo "Note: paper IDs are hardcoded because ArcadeDB does not support a SELECT subquery"
+echo "inside a MATCH 'where' clause; these IDs are the top-3 vector-similarity results."
 echo ""
 query "sql" "
 SELECT topic.name AS topic, count(*) AS connections

@@ -8,8 +8,10 @@ DB_NAME="KnowledgeGraph"
 
 # ── Wait for ArcadeDB ─────────────────────────────────────────────────────────
 echo "Waiting for ArcadeDB at ${ARCADEDB_URL}..."
+retries=0
 until curl -sf -u "${ARCADEDB_USER}:${ARCADEDB_PASS}" \
     "${ARCADEDB_URL}/api/v1/ready" > /dev/null 2>&1; do
+  (( retries++ >= 30 )) && { echo "ArcadeDB did not start after 60s"; exit 1; }
   sleep 2
 done
 echo "ArcadeDB is ready."

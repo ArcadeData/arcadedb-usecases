@@ -73,13 +73,13 @@ CREATE EDGE COVERS FROM (SELECT FROM Paper WHERE id = 'p9') TO (SELECT FROM Topi
 CREATE EDGE COVERS FROM (SELECT FROM Paper WHERE id = 'p10') TO (SELECT FROM Topic WHERE id = 't6')
 CREATE EDGE COVERS FROM (SELECT FROM Paper WHERE id = 'p10') TO (SELECT FROM Topic WHERE id = 't2')
 -- PaperActivity documents for trending query (varied counts so results are ordered meaningfully)
-INSERT INTO PaperActivity SET paperId = 'p1', citationCount = 15, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p2', citationCount = 22, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p3', citationCount = 18, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p8', citationCount = 30, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p10', citationCount = 25, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p1', citationCount = 8, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p2', citationCount = 10, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p9', citationCount = 12, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p3', citationCount = 7, ts = date()
-INSERT INTO PaperActivity SET paperId = 'p5', citationCount = 5, ts = date()
+INSERT INTO PaperActivity SET paperId = 'p1', citationCount = 15, ts = '2024-01-15T10:00:00'
+INSERT INTO PaperActivity SET paperId = 'p2', citationCount = 22, ts = '2024-01-15T10:01:00'
+INSERT INTO PaperActivity SET paperId = 'p3', citationCount = 18, ts = '2024-01-15T10:02:00'
+INSERT INTO PaperActivity SET paperId = 'p8', citationCount = 30, ts = '2024-01-15T10:03:00'
+INSERT INTO PaperActivity SET paperId = 'p10', citationCount = 25, ts = '2024-01-15T10:04:00'
+INSERT INTO PaperActivity SET paperId = 'p1', citationCount = 8, ts = '2024-01-16T10:00:00'
+INSERT INTO PaperActivity SET paperId = 'p2', citationCount = 10, ts = '2024-01-16T10:01:00'
+INSERT INTO PaperActivity SET paperId = 'p9', citationCount = 12, ts = '2024-01-16T10:02:00'
+INSERT INTO PaperActivity SET paperId = 'p3', citationCount = 7, ts = '2024-01-16T10:03:00'
+INSERT INTO PaperActivity SET paperId = 'p5', citationCount = 5, ts = '2024-01-16T10:04:00'
