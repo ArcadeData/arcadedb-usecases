@@ -40,7 +40,7 @@ echo "Find products semantically similar to the Laptop embedding [0.9,0.1,0.1,0.
 echo ""
 query "sql" "
 SELECT name, category, price,
-       vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 20) AS similarity
+       vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 20) AS similarity
 FROM Product
 WHERE inStock = true
 ORDER BY similarity DESC
@@ -78,7 +78,7 @@ LET \$collab = (
 )
 SELECT rec.title, rec.genre,
   collab_score,
-  vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 10) AS similarity,
+  vectorNeighbors('Show[embedding]', [0.9, 0.1, 0.1, 0.1], 10) AS similarity,
   (0.6 * collab_score + 0.4 * similarity) AS final_score
 FROM \$collab
 ORDER BY final_score DESC
@@ -95,7 +95,7 @@ MATCH (p:Product)
 WHERE p.category = 'Electronics'
   AND p.inStock = true
 RETURN p.name, p.price,
-  vectorNeighbors('embedding', [0.9, 0.1, 0.1, 0.1], 30) AS relevance
+  vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 30) AS relevance
 ORDER BY relevance DESC
 LIMIT 30
 "
