@@ -1,0 +1,81 @@
+name: Graph RAG CI
+
+on:
+  push:
+    paths:
+      - graph-rag/**
+      - .github/workflows/graph-rag.yml
+  pull_request:
+    paths:
+      - graph-rag/**
+      - .github/workflows/graph-rag.yml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [curl, java, langchain4j]
+
+    env:
+      ARCADEDB_URL: http://localhost:2480
+      ARCADEDB_USER: root
+      ARCADEDB_PASS: arcadedb
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Java
+        if: matrix.runner == 'java' || matrix.runner == 'langchain4j'
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven repository
+        if: matrix.runner == 'java' || matrix.runner == 'langchain4j'
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ matrix.runner }}-${{ hashFiles('graph-rag/java/pom.xml', 'graph-rag/langchain4j/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-${{ matrix.runner }}-
+
+      - name: Start ArcadeDB
+        working-directory: graph-rag
+        run: docker compose up -d
+
+      - name: Setup database
+        working-directory: graph-rag
+        run: ./setup.sh
+
+      - name: Run curl queries
+        if: matrix.runner == 'curl'
+        working-directory: graph-rag
+        run: ./queries/queries.sh
+
+      - name: Build and run Java (Bolt)
+        if: matrix.runner == 'java'
+        working-directory: graph-rag/java
+        run: |
+          mvn package --no-transfer-progress
+          java -jar target/graph-rag.jar
+
+      - name: Build and run LangChain4j
+        if: matrix.runner == 'langchain4j'
+        working-directory: graph-rag/langchain4j
+        run: |
+          mvn package --no-transfer-progress
+          java -jar target/graph-rag-langchain4j.jar
+          java -cp target/graph-rag-langchain4j.jar com.arcadedb.examples.GraphRAGContentRetriever
+
+      - name: Teardown
+        if: always()
+        working-directory: graph-rag
+        run: docker compose down

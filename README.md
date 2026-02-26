@@ -10,6 +10,8 @@ and runnable demos via both `curl` and a Java program.
 | Directory | Description | ArcadeDB features |
 |-----------|-------------|-------------------|
 | [recommendation-engine](./recommendation-engine/) | Intelligent product and content recommendations | Graph traversal, Vector similarity, Time-series |
+| [knowledge-graphs](./knowledge-graphs/) | Academic research knowledge graph with co-authorship and citation networks | Graph traversal, Vector similarity, Full-text search, Time-series |
+| [graph-rag](./graph-rag/) | Graph RAG system combining knowledge graphs with vector search for retrieval-augmented generation | Graph traversal, Vector similarity, Full-text indexing, Neo4j Bolt, LangChain4j |
 
 ## Structure
 
@@ -19,5 +21,5 @@ Each use case directory contains:
 - `sql/01-schema.sql` — vertex/edge type definitions
 - `sql/02-data.sql` — sample data
 - `queries/queries.sh` — all queries via `curl`
-- `java/` — standalone Maven project running the same queries via `arcadedb-network`
+- `java/` — standalone Maven project running the same queries via Java
 - `README.md` — quickstart guide
