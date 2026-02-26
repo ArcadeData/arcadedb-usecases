@@ -145,3 +145,17 @@ Adapts the 5 patterns to pure Cypher. Queries that rely on SQL-specific features
 - `queries.sh` runs all 5 queries and returns non-empty result sets
 - `mvn package && java -jar target/graph-rag.jar` connects via Bolt, runs all 5 Cypher queries
 - `mvn package && java -jar target/graph-rag-langchain4j.jar` ingests chunks, generates embeddings, runs similarity search and content retrieval
+
+## Implementation Deviations
+
+The following changes were made during integration testing:
+
+| Design | Implementation | Reason |
+|--------|---------------|--------|
+| Bolt port 2424 | Port 7687 | ArcadeDB's BoltProtocolPlugin defaults to 7687 (standard Neo4j port) |
+| `neo4j-java-driver:5.28.x` | `neo4j-java-driver:4.4.12` | ArcadeDB's Bolt implements protocol v4; driver 5.x fails handshake |
+| `Chunk` as DOCUMENT TYPE | `Chunk` as VERTEX TYPE | Edges (MENTIONS, AUTHORED) require vertex endpoints |
+| `:Entity` label in Cypher | Unlabeled `(entity)` | ArcadeDB Cypher doesn't resolve parent type labels to subtypes |
+| `Neo4jEmbeddingStore` via langchain4j-community-neo4j | Direct Neo4j driver + LangChain4j `CosineSimilarity` | ArcadeDB doesn't support `SHOW VECTOR INDEX` DDL used by Neo4jEmbeddingStore |
+| `vectorDistance` in SQL subquery | Direct `vectorNeighbors` ordering | `vectorDistance` doesn't work in subqueries in ArcadeDB 26.2.1 |
+| Docker JAVA_OPTS single line | Multi-line with plugins | BoltProtocolPlugin must be explicitly enabled via `arcadedb.server.plugins` |

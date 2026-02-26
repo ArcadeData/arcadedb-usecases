@@ -32,11 +32,12 @@ public class GraphRAG {
     }
   }
 
-  // Query 1: Hybrid Vector + Graph
-  // Finds chunks near the graph-topic embedding and their mentioned entities
+  // Query 1: Graph Traversal with Entity Collection
+  // Finds chunks and their mentioned entities via graph traversal
+  // (vector search requires SQL; see queries.sh Query 1 for the hybrid version)
   private static void runQuery1HybridVectorGraph(Driver driver) {
-    printHeader("Query 1: Hybrid Vector + Graph Retrieval",
-        "Find chunks similar to graph-topic embedding and their mentioned entities.");
+    printHeader("Query 1: Graph Traversal with Entity Collection",
+        "Find chunks and their mentioned entities via graph traversal.");
 
     String cypher = """
         MATCH (chunk:Chunk)-[:MENTIONS]->(entity)

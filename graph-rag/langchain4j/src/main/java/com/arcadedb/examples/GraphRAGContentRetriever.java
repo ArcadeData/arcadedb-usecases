@@ -67,6 +67,11 @@ public class GraphRAGContentRetriever {
             .limit(3)
             .toList();
 
+        if (scored.isEmpty()) {
+          System.out.println("  (no chunks found)\n");
+          continue;
+        }
+
         System.out.println("  Semantic matches:");
         for (ScoredChunk sc : scored) {
           System.out.printf("    [%.4f] [%s] %s%n",
