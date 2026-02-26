@@ -18,8 +18,13 @@ import java.util.stream.Collectors;
  * Demonstrates a Graph RAG content retrieval pipeline that combines LangChain4j
  * embeddings with ArcadeDB's graph traversal via the Neo4j Bolt driver.
  *
- * Pipeline: embed query → vector similarity for chunks → graph expansion
+ * Pipeline: embed query → cosine similarity for chunks → graph expansion
  * to find related entities → return enriched context.
+ *
+ * Similarity is computed in-memory using LangChain4j's CosineSimilarity because
+ * ArcadeDB's vectorNeighbors() function is SQL-only and not available over the
+ * Bolt protocol. The graph expansion step (MENTIONS traversal) runs server-side
+ * via Cypher over Bolt.
  */
 public class GraphRAGContentRetriever {
 

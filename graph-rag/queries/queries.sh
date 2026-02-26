@@ -50,14 +50,13 @@ LIMIT 20
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Query 3: Temporal-Aware Retrieval (Cypher) ==="
-echo "Get latest chunks per source."
+echo "=== Query 3: Latest Chunk Per Document (Cypher) ==="
+echo "Get the highest-indexed chunk per source document."
 echo ""
 query "cypher" "
 MATCH (c:Chunk)
-WHERE c.chunkIndex = 1
 RETURN c.content, c.source, c.chunkIndex
-ORDER BY c.chunkIndex DESC
+ORDER BY c.source, c.chunkIndex DESC
 LIMIT 10
 "
 

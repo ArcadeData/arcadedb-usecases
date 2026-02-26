@@ -77,7 +77,7 @@ java -cp target/graph-rag-langchain4j.jar com.arcadedb.examples.GraphRAGContentR
 |---|---------|----------|-------------|
 | 1 | Hybrid Vector + Graph | SQL | Vector + Graph |
 | 2 | Multi-Hop Entity Bridge | Cypher | Graph |
-| 3 | Temporal-Aware Retrieval | Cypher | Graph |
+| 3 | Latest Chunk Per Document | Cypher | Graph |
 | 4 | Composite Scoring | SQL | Vector + Graph |
 | 5 | Agentic RAG Steps | Mixed | Multi-signal |
 

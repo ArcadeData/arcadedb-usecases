@@ -15,9 +15,9 @@ public class GraphRAG {
   public static void main(String[] args) {
     String uri = "bolt://" + HOST + ":" + PORT;
     try (Driver driver = GraphDatabase.driver(uri, AuthTokens.basic(USER, PASSWORD))) {
-      tryRun(() -> runQuery1HybridVectorGraph(driver), "Query 1");
+      tryRun(() -> runQuery1GraphTraversal(driver), "Query 1");
       tryRun(() -> runQuery2MultiHopEntityBridge(driver), "Query 2");
-      tryRun(() -> runQuery3TemporalAware(driver), "Query 3");
+      tryRun(() -> runQuery3LatestChunks(driver), "Query 3");
       tryRun(() -> runQuery4CompositeScoring(driver), "Query 4");
       tryRun(() -> runQuery5AgenticRAG(driver), "Query 5");
     }
@@ -35,7 +35,7 @@ public class GraphRAG {
   // Query 1: Graph Traversal with Entity Collection
   // Finds chunks and their mentioned entities via graph traversal
   // (vector search requires SQL; see queries.sh Query 1 for the hybrid version)
-  private static void runQuery1HybridVectorGraph(Driver driver) {
+  private static void runQuery1GraphTraversal(Driver driver) {
     printHeader("Query 1: Graph Traversal with Entity Collection",
         "Find chunks and their mentioned entities via graph traversal.");
 
@@ -86,17 +86,16 @@ public class GraphRAG {
     }
   }
 
-  // Query 3: Temporal-Aware Retrieval
-  // Filters chunks by chunkIndex to get latest context per source
-  private static void runQuery3TemporalAware(Driver driver) {
-    printHeader("Query 3: Temporal-Aware Retrieval",
-        "Get the latest chunk (highest chunkIndex) per source.");
+  // Query 3: Latest Chunk Per Document
+  // Returns the highest-indexed chunk for each source document
+  private static void runQuery3LatestChunks(Driver driver) {
+    printHeader("Query 3: Latest Chunk Per Document",
+        "Get the highest-indexed chunk per source document.");
 
     String cypher = """
         MATCH (c:Chunk)
-        WHERE c.chunkIndex = 1
         RETURN c.content AS content, c.source AS source, c.chunkIndex AS chunkIndex
-        ORDER BY c.chunkIndex DESC
+        ORDER BY c.source, c.chunkIndex DESC
         LIMIT 10""";
 
     try (Session session = driver.session(SessionConfig.forDatabase("GraphRAG"))) {

@@ -19,8 +19,12 @@ import java.util.List;
  *
  * LangChain4j generates 384-dimensional embeddings using AllMiniLmL6V2 (runs
  * in-process, no API keys). The embeddings are stored in ArcadeDB's LCChunk
- * vertex type via Cypher over Bolt. Similarity is computed using LangChain4j's
- * CosineSimilarity.
+ * vertex type via Cypher over Bolt.
+ *
+ * Similarity is computed in-memory using LangChain4j's CosineSimilarity because
+ * ArcadeDB's vectorNeighbors() function is SQL-only and not available over the
+ * Bolt protocol. For server-side vector search, see queries.sh which uses the
+ * HTTP API with vectorNeighbors().
  */
 public class GraphRAGEmbeddingStore {
 
@@ -36,6 +40,9 @@ public class GraphRAGEmbeddingStore {
     String uri = "bolt://" + HOST + ":" + PORT;
     try (Driver driver = GraphDatabase.driver(uri, AuthTokens.basic(USER, PASSWORD));
          Session session = driver.session(SessionConfig.forDatabase("GraphRAG"))) {
+
+      // Clean up any LCChunk nodes from previous runs
+      session.run("MATCH (c:LCChunk) DELETE c");
 
       // Ingest sample chunks with real embeddings via Cypher over Bolt
       String[] texts = {
