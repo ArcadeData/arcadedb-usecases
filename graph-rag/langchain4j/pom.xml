@@ -26,7 +26,7 @@
     <dependency>
       <groupId>dev.langchain4j</groupId>
       <artifactId>langchain4j-embeddings-all-minilm-l6-v2</artifactId>
-      <version>${langchain4j.version}</version>
+      <version>${langchain4j.community.version}</version>
     </dependency>
     <dependency>
       <groupId>dev.langchain4j</groupId>
