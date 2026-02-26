@@ -1,5 +1,5 @@
--- Document type for text chunks with vector embeddings
-CREATE DOCUMENT TYPE Chunk IF NOT EXISTS;
+-- Vertex type for text chunks with vector embeddings
+CREATE VERTEX TYPE Chunk IF NOT EXISTS;
 CREATE PROPERTY Chunk.content IF NOT EXISTS STRING;
 CREATE PROPERTY Chunk.source IF NOT EXISTS STRING;
 CREATE PROPERTY Chunk.chunkIndex IF NOT EXISTS INTEGER;

@@ -15,14 +15,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <langchain4j.version>1.11.0</langchain4j.version>
     <langchain4j.community.version>1.11.0-beta19</langchain4j.community.version>
+    <neo4j.driver.version>4.4.12</neo4j.driver.version>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>dev.langchain4j</groupId>
-      <artifactId>langchain4j-community-neo4j</artifactId>
-      <version>${langchain4j.community.version}</version>
-    </dependency>
     <dependency>
       <groupId>dev.langchain4j</groupId>
       <artifactId>langchain4j-embeddings-all-minilm-l6-v2</artifactId>
@@ -32,6 +28,11 @@
       <groupId>dev.langchain4j</groupId>
       <artifactId>langchain4j</artifactId>
       <version>${langchain4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.neo4j.driver</groupId>
+      <artifactId>neo4j-java-driver</artifactId>
+      <version>${neo4j.driver.version}</version>
     </dependency>
   </dependencies>
 

@@ -3,9 +3,12 @@ services:
     image: arcadedata/arcadedb:26.2.1
     ports:
       - "2480:2480"
-      - "2424:2424"
+      - "7687:7687"
     environment:
-      JAVA_OPTS: "-Darcadedb.server.rootPassword=arcadedb"
+      JAVA_OPTS: >-
+        -Darcadedb.server.rootPassword=arcadedb
+        -Darcadedb.server.plugins=BoltProtocolPlugin
+        -Darcadedb.bolt.defaultDatabase=GraphRAG
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:2480/api/v1/ready"]
       interval: 5s

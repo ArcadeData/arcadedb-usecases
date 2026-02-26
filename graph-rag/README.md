@@ -44,19 +44,24 @@ mvn package -q
 java -jar target/graph-rag.jar
 ```
 
-### 3c. Run queries via Langchain4j
+### 3c. Run LangChain4j demos
 
 ```bash
 cd langchain4j
 mvn package -q
+
+# Embedding store: ingest + similarity search
 java -jar target/graph-rag-langchain4j.jar
+
+# Content retriever: semantic search + graph expansion
+java -cp target/graph-rag-langchain4j.jar com.arcadedb.examples.GraphRAGContentRetriever
 ```
 
 ## Schema
 
 | Type | Kind | Key properties |
 |------|------|----------------|
-| `Chunk` | Document | `content`, `source`, `chunkIndex`, `embedding` |
+| `Chunk` | Vertex | `content`, `source`, `chunkIndex`, `embedding` |
 | `Entity` | Vertex | `name` |
 | `Person` | Vertex (extends Entity) | `name` |
 | `Concept` | Vertex (extends Entity) | `name` |
@@ -88,8 +93,8 @@ java -jar target/graph-rag-langchain4j.jar
 The `langchain4j/` directory contains two standalone examples using LangChain4j
 with ArcadeDB via the Neo4j Bolt protocol:
 
-- **GraphRAGEmbeddingStore** — ingests text chunks with real 384D embeddings (AllMiniLmL6V2) and performs similarity search
-- **GraphRAGContentRetriever** — wires the embedding store into a LangChain4j `EmbeddingStoreContentRetriever` pipeline
+- **GraphRAGEmbeddingStore** — ingests text chunks with real 384D embeddings (AllMiniLmL6V2), stores via Cypher over Bolt, and performs similarity search using LangChain4j's cosine similarity
+- **GraphRAGContentRetriever** — re-embeds the sample Chunk data with 384D vectors, runs semantic search, then enriches results with graph context via Cypher traversal (entities mentioned by top matches)
 
 No external API keys required — the embedding model runs in-process.
 
@@ -97,7 +102,7 @@ No external API keys required — the embedding model runs in-process.
 
 This use case targets ArcadeDB **26.2.1**. Vector similarity queries use
 `vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR`
-index. The Bolt protocol (port 2424) enables Neo4j driver compatibility.
+index. The Bolt protocol (port 7687) enables Neo4j driver compatibility.
 
 ## Reference
 

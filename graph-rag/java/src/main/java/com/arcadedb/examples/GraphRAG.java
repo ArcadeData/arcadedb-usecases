@@ -8,7 +8,7 @@ import java.util.List;
 public class GraphRAG {
 
   private static final String HOST     = System.getenv().getOrDefault("ARCADEDB_HOST", "localhost");
-  private static final String PORT     = System.getenv().getOrDefault("ARCADEDB_BOLT_PORT", "2424");
+  private static final String PORT     = System.getenv().getOrDefault("ARCADEDB_BOLT_PORT", "7687");
   private static final String USER     = System.getenv().getOrDefault("ARCADEDB_USER", "root");
   private static final String PASSWORD = System.getenv().getOrDefault("ARCADEDB_PASS", "arcadedb");
 
@@ -39,7 +39,7 @@ public class GraphRAG {
         "Find chunks similar to graph-topic embedding and their mentioned entities.");
 
     String cypher = """
-        MATCH (chunk:Chunk)-[:MENTIONS]->(entity:Entity)
+        MATCH (chunk:Chunk)-[:MENTIONS]->(entity)
         RETURN chunk.content AS content, chunk.source AS source,
                collect(DISTINCT entity.name) AS entities
         LIMIT 10""";
@@ -63,7 +63,7 @@ public class GraphRAG {
         "Find chunks connected through shared entities from GraphRAG docs.");
 
     String cypher = """
-        MATCH (direct:Chunk)-[:MENTIONS]->(entity:Entity)<-[:MENTIONS]-(related:Chunk)
+        MATCH (direct:Chunk)-[:MENTIONS]->(entity)<-[:MENTIONS]-(related:Chunk)
         WHERE direct.source = 'Getting Started with GraphRAG'
           AND related.source <> direct.source
         RETURN direct.source AS source_doc,
@@ -118,7 +118,7 @@ public class GraphRAG {
 
     String cypher = """
         MATCH (chunk:Chunk)
-        OPTIONAL MATCH (chunk)-[:MENTIONS]->(entity:Entity)
+        OPTIONAL MATCH (chunk)-[:MENTIONS]->(entity)
         RETURN chunk.content AS content, chunk.source AS source,
                count(entity) AS entity_count
         ORDER BY entity_count DESC
@@ -147,7 +147,7 @@ public class GraphRAG {
       System.out.println("  Step 1: Graph expansion from GraphRAG docs");
       String step1 = """
           MATCH (c:Chunk {source: 'Getting Started with GraphRAG'})
-                -[:MENTIONS]->(e:Entity)
+                -[:MENTIONS]->(e)
                 -[:RELATES_TO]->(related)
           RETURN e.name AS entity, related.name AS related_concept
           LIMIT 10""";

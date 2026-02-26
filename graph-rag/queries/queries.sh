@@ -27,12 +27,9 @@ echo ""
 query "sql" "
 SELECT content, source,
        out('MENTIONS').name AS entities
-FROM (
-  SELECT *, vectorDistance('Chunk[embedding]', embedding, [0.9, 0.2, 0.1, 0.1]) AS score
-  FROM Chunk
-  ORDER BY vectorNeighbors('Chunk[embedding]', [0.9, 0.2, 0.1, 0.1], 5) DESC
-  LIMIT 5
-)
+FROM Chunk
+ORDER BY vectorNeighbors('Chunk[embedding]', [0.9, 0.2, 0.1, 0.1], 5) DESC
+LIMIT 5
 "
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -41,7 +38,7 @@ echo "=== Query 2: Multi-Hop Entity Bridge (Cypher) ==="
 echo "Find chunks connected through shared entities."
 echo ""
 query "cypher" "
-MATCH (direct:Chunk)-[:MENTIONS]->(entity:Entity)<-[:MENTIONS]-(related:Chunk)
+MATCH (direct:Chunk)-[:MENTIONS]->(entity)<-[:MENTIONS]-(related:Chunk)
 WHERE direct.source = 'Getting Started with GraphRAG'
   AND related.source <> direct.source
 RETURN direct.source AS source_doc,
@@ -71,7 +68,6 @@ echo "Score chunks by vector distance and entity connections."
 echo ""
 query "sql" "
 SELECT content, source,
-       vectorDistance('Chunk[embedding]', embedding, [0.9, 0.2, 0.1, 0.1]) AS vector_score,
        out('MENTIONS').size() AS entity_count
 FROM Chunk
 ORDER BY vectorNeighbors('Chunk[embedding]', [0.9, 0.2, 0.1, 0.1], 10) DESC
@@ -95,7 +91,7 @@ LIMIT 5
 echo ""
 echo "--- Step 2: Graph expansion — entities and relations ---"
 query "cypher" "
-MATCH (c:Chunk {source: 'Getting Started with GraphRAG'})-[:MENTIONS]->(e:Entity)-[:RELATES_TO]->(related)
+MATCH (c:Chunk {source: 'Getting Started with GraphRAG'})-[:MENTIONS]->(e)-[:RELATES_TO]->(related)
 RETURN e.name, related.name
 LIMIT 10
 "
