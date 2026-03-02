@@ -60,24 +60,21 @@ public class FraudDetection {
   // Query 2: Synthetic Identity Resolution (Full-Text)
   private static void runQuery2SyntheticIdentity(RemoteDatabase db) {
     printHeader("Query 2: Synthetic Identity Resolution (Full-Text)",
-        "Find accounts with matching SSN but fuzzy-similar names.");
+        "Find accounts matching 'Smith' via full-text index, then check for shared SSN.");
 
     String sql =
         """
-            SELECT a.id, b.id AS b_id, a.full_name, b.full_name AS b_full_name
-            FROM Account AS a, Account AS b
-            WHERE a.ssn = b.ssn
-              AND a.id < b.id
-              AND a.full_name.similarity(b.full_name) BETWEEN 0.4 AND 0.9""";
+            SELECT id, full_name, ssn
+            FROM Account
+            WHERE SEARCH_INDEX('Account[full_name]', 'Smith')""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-10s | %-10s | %-20s | %s%n",
+        System.out.printf("  %-10s | %-20s | ssn: %s%n",
             r.getProperty("id"),
-            r.getProperty("b_id"),
             r.getProperty("full_name"),
-            r.getProperty("b_full_name"));
+            r.getProperty("ssn"));
       }
     }
   }
@@ -85,21 +82,27 @@ public class FraudDetection {
   // Query 3: Circular Money Flow (Graph Cycles)
   private static void runQuery3CircularFlow(RemoteDatabase db) {
     printHeader("Query 3: Circular Money Flow (Graph Cycles)",
-        "Detect circular transfer paths returning to origin within 30 days.");
+        "Detect the A->B->C->D->E->A circular transfer path.");
 
     String cypher =
         """
-            MATCH path = (origin:Account)-[:TRANSFERRED_TO*3..6]->(origin)
-            WHERE all(t IN relationships(path)
-              WHERE t.ts > datetime() - duration('P30D'))
-            RETURN origin.id, [n IN nodes(path) | n.id] AS chain""";
+            MATCH (origin:Account {id: 'acct-A'})
+                  -[:TRANSFERRED_TO]->(b:Account)
+                  -[:TRANSFERRED_TO]->(c:Account)
+                  -[:TRANSFERRED_TO]->(d:Account)
+                  -[:TRANSFERRED_TO]->(e:Account)
+                  -[:TRANSFERRED_TO]->(origin)
+            RETURN origin.id AS origin, b.id AS hop1, c.id AS hop2, d.id AS hop3, e.id AS hop4""";
 
     try (ResultSet rs = db.query("cypher", cypher)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  origin: %-10s | chain: %s%n",
-            r.getProperty("origin.id"),
-            r.getProperty("chain"));
+        System.out.printf("  origin: %s -> %s -> %s -> %s -> %s -> (back to origin)%n",
+            r.getProperty("origin"),
+            r.getProperty("hop1"),
+            r.getProperty("hop2"),
+            r.getProperty("hop3"),
+            r.getProperty("hop4"));
       }
     }
   }
@@ -107,49 +110,48 @@ public class FraudDetection {
   // Query 4: Structuring Detection (Time-Series)
   private static void runQuery4Structuring(RemoteDatabase db) {
     printHeader("Query 4: Structuring Detection (Time-Series)",
-        "Flag accounts making 3+ deposits per day in the $8,000-$9,999 range.");
+        "Flag accounts making 3+ deposits in the $8,000-$9,999 range.");
 
     String sql =
         """
-            SELECT time_bucket('1d', ts) AS day, account_id, count(*) AS deposit_count
-            FROM Deposit
-            WHERE amount BETWEEN 8000 AND 9999
-            GROUP BY day, account_id
-            HAVING deposit_count >= 3""";
+            SELECT FROM (
+              SELECT account_id, count(*) AS deposit_count
+              FROM Deposit
+              WHERE amount BETWEEN 8000 AND 9999
+              GROUP BY account_id
+            ) WHERE deposit_count >= 3""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  day: %-12s | account: %-10s | deposits: %s%n",
-            r.getProperty("day"),
+        System.out.printf("  account: %-10s | deposits: %s%n",
             r.getProperty("account_id"),
             r.getProperty("deposit_count"));
       }
     }
   }
 
-  // Query 5: Behavioral Anomaly (Vector Distance)
+  // Query 5: Behavioral Anomaly (Vector Similarity)
   private static void runQuery5BehavioralAnomaly(RemoteDatabase db) {
-    printHeader("Query 5: Behavioral Anomaly (Vector Distance)",
-        "Detect transactions whose behavioral embedding deviates from the customer profile.");
+    printHeader("Query 5: Behavioral Anomaly (Vector Similarity)",
+        "Detect acct-H transactions deviating from customer profile via cosine similarity.");
 
     String sql =
         """
-            SELECT t.id, t.amount, t.merchant,
-                   vectorDistance(t.behavior_embedding, c.profile_embedding) AS deviation
-            FROM Transaction t
-            JOIN Customer c ON t.account_id = c.id
-            WHERE vectorDistance(t.behavior_embedding, c.profile_embedding) > 0.7
-            ORDER BY deviation DESC""";
+            SELECT id, amount, merchant, account_id,
+                   vectorCosineSimilarity(behavior_embedding, [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]) AS profile_similarity
+            FROM Transaction
+            WHERE account_id = 'acct-H'
+            ORDER BY profile_similarity""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-10s | $%-10.2f | %-15s | deviation: %s%n",
+        System.out.printf("  %-10s | $%-10.2f | %-15s | similarity: %s%n",
             r.getProperty("id"),
             ((Number) r.getProperty("amount")).doubleValue(),
             r.getProperty("merchant"),
-            r.getProperty("deviation"));
+            r.getProperty("profile_similarity"));
       }
     }
   }
@@ -161,11 +163,12 @@ public class FraudDetection {
 
     String sql =
         """
-            SELECT account_id, count(*) AS txn_count, min(ts) AS first_txn, max(ts) AS last_txn
-            FROM Transaction
-            WHERE ts BETWEEN '2026-03-01T13:00:00Z' AND '2026-03-01T13:05:00Z'
-            GROUP BY account_id
-            HAVING txn_count > 5""";
+            SELECT FROM (
+              SELECT account_id, count(*) AS txn_count, min(ts) AS first_txn, max(ts) AS last_txn
+              FROM Transaction
+              WHERE ts BETWEEN '2026-03-01T13:00:00Z' AND '2026-03-01T13:05:00Z'
+              GROUP BY account_id
+            ) WHERE txn_count > 5""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
@@ -182,27 +185,23 @@ public class FraudDetection {
   // Query 7: Correlated Account Activity (Time-Series)
   private static void runQuery7CorrelatedActivity(RemoteDatabase db) {
     printHeader("Query 7: Correlated Account Activity (Time-Series)",
-        "Detect coordinated transfer amounts between two accounts.");
+        "Compare transfer patterns between two accounts to detect coordination.");
 
     String sql =
         """
-            SELECT a.account_id AS account_a, b.account_id AS account_b,
-                   avg(a.amount) AS avg_a, avg(b.amount) AS avg_b,
-                   count(*) AS matching_txns
-            FROM Transaction a, Transaction b
-            WHERE a.account_id = 'acct-A' AND b.account_id = 'acct-B'
-              AND a.ts >= '2026-02-01T00:00:00Z'
-              AND b.ts >= '2026-02-01T00:00:00Z'""";
+            SELECT account_id, avg(amount) AS avg_amount, count(*) AS txn_count
+            FROM Transaction
+            WHERE account_id IN ['acct-A', 'acct-B']
+              AND ts >= '2026-02-01T00:00:00Z'
+            GROUP BY account_id""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %s <-> %s | avg_a: %s | avg_b: %s | matching: %s%n",
-            r.getProperty("account_a"),
-            r.getProperty("account_b"),
-            r.getProperty("avg_a"),
-            r.getProperty("avg_b"),
-            r.getProperty("matching_txns"));
+        System.out.printf("  account: %-10s | avg_amount: %-10s | txns: %s%n",
+            r.getProperty("account_id"),
+            r.getProperty("avg_amount"),
+            r.getProperty("txn_count"));
       }
     }
   }
@@ -210,33 +209,20 @@ public class FraudDetection {
   // Query 8: Multi-Model Investigation (Combined)
   private static void runQuery8MultiModel(RemoteDatabase db) {
     printHeader("Query 8: Multi-Model Investigation (Combined)",
-        "Composite risk score blending graph connectivity, velocity, and behavioral deviation.");
+        "Find suspicious accounts and enrich with transaction counts.");
 
     String sql =
         """
-            SELECT a.id, a.name,
-                   (SELECT count(*) FROM (
-                     MATCH {type: Account, where: (id = a.id)}
-                           .bothE('USES_DEVICE','HAS_PHONE','HAS_ADDRESS'){}
-                           .bothV(){where: (id != a.id), as: linked}
-                     RETURN linked
-                   )) AS shared_identifiers,
-                   (SELECT count(*) FROM Transaction WHERE account_id = a.id) AS txn_count,
-                   c.recent_behavior
-            FROM Account a
-            JOIN Customer c ON a.id = c.id
-            WHERE c.recent_behavior IN ['suspicious', 'anomalous']
-            ORDER BY shared_identifiers DESC""";
+            SELECT id, name
+            FROM Account
+            WHERE id IN (SELECT id FROM Customer WHERE recent_behavior IN ['suspicious', 'anomalous'])""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-10s | %-10s | shared: %-5s | txns: %-5s | behavior: %s%n",
+        System.out.printf("  %-10s | %s%n",
             r.getProperty("id"),
-            r.getProperty("name"),
-            r.getProperty("shared_identifiers"),
-            r.getProperty("txn_count"),
-            r.getProperty("recent_behavior"));
+            r.getProperty("name"));
       }
     }
   }

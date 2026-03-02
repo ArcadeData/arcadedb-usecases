@@ -69,10 +69,10 @@ java -jar target/fraud-detection.jar
 | # | Pattern | Language | Signal type |
 |---|---------|----------|-------------|
 | 1 | Fraud Ring Detection | Cypher | Graph |
-| 2 | Synthetic Identity Resolution | SQL + full_name.similarity() | Full-Text |
+| 2 | Synthetic Identity Resolution | SQL + SEARCH_INDEX() | Full-Text |
 | 3 | Circular Money Flow | Cypher | Graph |
-| 4 | Structuring Detection | SQL + time_bucket() | Time-Series |
-| 5 | Behavioral Anomaly | SQL + vectorDistance() | Vector |
+| 4 | Structuring Detection | SQL + subquery | Time-Series |
+| 5 | Behavioral Anomaly | SQL + vectorCosineSimilarity() | Vector |
 | 6 | Velocity Attack Detection | SQL | Time-Series |
 | 7 | Correlated Account Activity | SQL | Time-Series |
 | 8 | Multi-Model Investigation | SQL + MATCH | Combined |
@@ -91,9 +91,9 @@ java -jar target/fraud-detection.jar
 ## ArcadeDB Version Notes
 
 This use case targets ArcadeDB **26.3.1-SNAPSHOT**. It uses:
-- `vectorDistance()` for behavioral anomaly detection with `LSM_VECTOR` indexes
-- `time_bucket('1d', ts)` for time-series bucketing
-- `full_name.similarity()` for full-text fuzzy matching with a `FULL_TEXT` index
+- `vectorCosineSimilarity()` for behavioral anomaly detection with `LSM_VECTOR` indexes
+- `SEARCH_INDEX()` for full-text fuzzy matching with a `FULL_TEXT` index
+- Subquery wrapping for `HAVING`-equivalent filtering (ArcadeDB does not support `HAVING`)
 - Cypher queries for graph traversal and cycle detection
 
 ## Reference
