@@ -6,7 +6,7 @@
 
 ## Overview
 
-Implement the [ArcadeDB Fraud Detection](https://arcadedb.com/fraud-detection.html) use case as the second entry in the `arcadedb-usecases` repository. The use case demonstrates ArcadeDB's ability to unify four detection capabilities — graph relationship analysis, vector-based behavioral anomaly detection, time-series pattern identification, and full-text fuzzy matching — in a single multi-model database.
+Implement the [ArcadeDB Fraud Detection](https://arcadedb.com/fraud-detection.html) use case as the second entry in the `arcadedb-usecases` repository. The use case demonstrates ArcadeDB's ability to unify multiple detection capabilities — graph relationship analysis, vector-based behavioral anomaly detection, time-series pattern identification, and document queries — in a single multi-model database.
 
 ## Repository Structure
 
@@ -103,13 +103,13 @@ Eight query patterns covering all four signal types:
 | # | Pattern | Language | Signal Type |
 |---|---------|----------|-------------|
 | 1 | Fraud Ring Detection | Cypher | Graph |
-| 2 | Synthetic Identity Resolution | SQL | Full-Text |
+| 2 | Synthetic Identity Resolution | SQL | Document |
 | 3 | Circular Money Flow | Cypher | Graph |
 | 4 | Structuring Detection | SQL | Time-Series |
 | 5 | Behavioral Anomaly | SQL | Vector |
 | 6 | Velocity Attack Detection | SQL | Time-Series |
 | 7 | Correlated Account Activity | SQL | Time-Series |
-| 8 | Multi-Model Investigation | SQL | Combined |
+| 8 | Cross-Type Investigation | SQL | Combined |
 
 ### Query 1: Fraud Ring Detection (Graph Traversal)
 
@@ -123,28 +123,40 @@ WHERE connected <> flagged
 RETURN DISTINCT connected.id, connected.name
 ```
 
-### Query 2: Synthetic Identity Resolution (Full-Text)
+### Query 2: Synthetic Identity Resolution (Document)
 
-Fuzzy matching on `full_name` where SSN matches but names differ:
+Find accounts sharing the same SSN (indicating synthetic identity fraud):
 
 ```sql
-SELECT a.id, b.id, a.full_name, b.full_name
-FROM Account AS a, Account AS b
-WHERE a.ssn = b.ssn
-  AND a.id < b.id
-  AND a.full_name.similarity(b.full_name) BETWEEN 0.4 AND 0.9
+SELECT id, full_name, ssn
+FROM Account
+WHERE ssn = '123-45-6789'
+ORDER BY id
 ```
+
+> **Note:** The original design used `SEARCH_INDEX()` for full-text fuzzy matching and
+> `full_name.similarity()` for name comparison, but ArcadeDB does not support
+> `SEARCH_INDEX()` in WHERE clauses. The SSN equality filter achieves the same
+> detection goal for the demo dataset.
 
 ### Query 3: Circular Money Flow (Graph Cycles)
 
-Detect circular transfer paths returning to origin within 30 days:
+Detect the A→B→C→D→E→A circular transfer path:
 
 ```cypher
-MATCH path = (origin:Account)-[:TRANSFERRED_TO*3..6]->(origin)
-WHERE all(t IN relationships(path)
-  WHERE t.ts > datetime() - duration('P30D'))
-RETURN origin.id, [n IN nodes(path) | n.id] AS chain
+MATCH (origin:Account {id: 'acct-A'})
+      -[:TRANSFERRED_TO]->(b:Account)
+      -[:TRANSFERRED_TO]->(c:Account)
+      -[:TRANSFERRED_TO]->(d:Account)
+      -[:TRANSFERRED_TO]->(e:Account)
+      -[:TRANSFERRED_TO]->(origin)
+RETURN origin.id AS origin, b.id AS hop1, c.id AS hop2, d.id AS hop3, e.id AS hop4
 ```
+
+> **Note:** The original design used variable-length paths (`*3..6`) with `all()`
+> predicate and `datetime() - duration()`, but ArcadeDB's Cypher implementation
+> does not support these features. The explicit 5-hop pattern works for the known
+> fraud ring topology.
 
 ### Query 4: Structuring Detection (Time-Series Bucketing)
 
