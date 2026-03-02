@@ -6,7 +6,7 @@ system that unifies four signal types in a single database:
 - **Graph traversal** — fraud ring detection via shared identifier patterns
 - **Vector similarity** — behavioral anomaly detection using embeddings
 - **Time-series** — structuring and velocity attack detection via temporal analysis
-- **Full-text fuzzy matching** — synthetic identity resolution via name similarity
+- **Document queries** — synthetic identity resolution via shared SSN detection
 
 ## Prerequisites
 
@@ -69,7 +69,7 @@ java -jar target/fraud-detection.jar
 | # | Pattern | Language | Signal type |
 |---|---------|----------|-------------|
 | 1 | Fraud Ring Detection | Cypher | Graph |
-| 2 | Synthetic Identity Resolution | SQL + SEARCH_INDEX() | Full-Text |
+| 2 | Synthetic Identity Resolution | SQL | Document |
 | 3 | Circular Money Flow | Cypher | Graph |
 | 4 | Structuring Detection | SQL + subquery | Time-Series |
 | 5 | Behavioral Anomaly | SQL + vectorCosineSimilarity() | Vector |
@@ -92,7 +92,6 @@ java -jar target/fraud-detection.jar
 
 This use case targets ArcadeDB **26.3.1-SNAPSHOT**. It uses:
 - `vectorCosineSimilarity()` for behavioral anomaly detection with `LSM_VECTOR` indexes
-- `SEARCH_INDEX()` for full-text fuzzy matching with a `FULL_TEXT` index
 - Subquery wrapping for `HAVING`-equivalent filtering (ArcadeDB does not support `HAVING`)
 - Cypher queries for graph traversal and cycle detection
 

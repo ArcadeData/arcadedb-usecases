@@ -52,4 +52,3 @@ CREATE INDEX IF NOT EXISTS ON Customer (id) UNIQUE;
 CREATE INDEX IF NOT EXISTS ON Transaction (id) UNIQUE;
 CREATE INDEX IF NOT EXISTS ON Customer (profile_embedding) LSM_VECTOR METADATA { dimensions: 8, similarity: 'COSINE' };
 CREATE INDEX IF NOT EXISTS ON Transaction (behavior_embedding) LSM_VECTOR METADATA { dimensions: 8, similarity: 'COSINE' };
-CREATE INDEX IF NOT EXISTS ON Account (full_name) FULL_TEXT;
