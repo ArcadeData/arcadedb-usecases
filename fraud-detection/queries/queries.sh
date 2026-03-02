@@ -34,13 +34,14 @@ RETURN DISTINCT connected.id, connected.name
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Query 2: Synthetic Identity Resolution (Full-Text) ==="
-echo "Find accounts matching 'Smith' via full-text index, then check for shared SSN."
+echo "=== Query 2: Synthetic Identity Resolution ==="
+echo "Find accounts sharing the same SSN (indicating synthetic identity fraud)."
 echo ""
 query "sql" "
 SELECT id, full_name, ssn
 FROM Account
-WHERE SEARCH_INDEX('Account[full_name]', 'Smith')
+WHERE ssn = '123-45-6789'
+ORDER BY id
 "
 
 # ─────────────────────────────────────────────────────────────────────────────

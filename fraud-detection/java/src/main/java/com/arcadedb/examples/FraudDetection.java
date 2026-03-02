@@ -57,16 +57,17 @@ public class FraudDetection {
     }
   }
 
-  // Query 2: Synthetic Identity Resolution (Full-Text)
+  // Query 2: Synthetic Identity Resolution
   private static void runQuery2SyntheticIdentity(RemoteDatabase db) {
-    printHeader("Query 2: Synthetic Identity Resolution (Full-Text)",
-        "Find accounts matching 'Smith' via full-text index, then check for shared SSN.");
+    printHeader("Query 2: Synthetic Identity Resolution",
+        "Find accounts sharing the same SSN (indicating synthetic identity fraud).");
 
     String sql =
         """
             SELECT id, full_name, ssn
             FROM Account
-            WHERE SEARCH_INDEX('Account[full_name]', 'Smith')""";
+            WHERE ssn = '123-45-6789'
+            ORDER BY id""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
