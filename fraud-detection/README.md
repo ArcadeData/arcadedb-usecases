@@ -75,7 +75,7 @@ java -jar target/fraud-detection.jar
 | 5 | Behavioral Anomaly | SQL + vectorCosineSimilarity() | Vector |
 | 6 | Velocity Attack Detection | SQL | Time-Series |
 | 7 | Correlated Account Activity | SQL | Time-Series |
-| 8 | Multi-Model Investigation | SQL + MATCH | Combined |
+| 8 | Cross-Type Investigation | SQL + subquery | Combined |
 
 ## Sample Data
 

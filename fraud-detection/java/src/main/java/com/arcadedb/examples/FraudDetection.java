@@ -207,10 +207,10 @@ public class FraudDetection {
     }
   }
 
-  // Query 8: Multi-Model Investigation (Combined)
+  // Query 8: Cross-Type Investigation (SQL Subquery)
   private static void runQuery8MultiModel(RemoteDatabase db) {
-    printHeader("Query 8: Multi-Model Investigation (Combined)",
-        "Find suspicious accounts and enrich with transaction counts.");
+    printHeader("Query 8: Cross-Type Investigation (SQL Subquery)",
+        "Find accounts linked to customers flagged as suspicious or anomalous.");
 
     String sql =
         """

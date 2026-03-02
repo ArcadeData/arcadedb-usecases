@@ -115,8 +115,8 @@ GROUP BY account_id
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Query 8: Multi-Model Investigation (Combined) ==="
-echo "Find suspicious accounts and enrich with transaction counts."
+echo "=== Query 8: Cross-Type Investigation (SQL Subquery) ==="
+echo "Find accounts linked to customers flagged as suspicious or anomalous."
 echo ""
 query "sql" "
 SELECT id, name
