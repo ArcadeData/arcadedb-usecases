@@ -12,6 +12,7 @@ and runnable demos via both `curl` and a Java program.
 | [recommendation-engine](./recommendation-engine/) | Intelligent product and content recommendations | Graph traversal, Vector similarity, Time-series |
 | [knowledge-graphs](./knowledge-graphs/) | Academic research knowledge graph with co-authorship and citation networks | Graph traversal, Vector similarity, Full-text search, Time-series |
 | [graph-rag](./graph-rag/) | Graph RAG system combining knowledge graphs with vector search for retrieval-augmented generation | Graph traversal, Vector similarity, Full-text indexing, Neo4j Bolt, LangChain4j |
+| [fraud-detection](./fraud-detection/) | Fraud detection system unifying graph, vector, and time-series signals | Graph traversal, Vector similarity, Time-series, Cypher |
 
 ## Structure
 
