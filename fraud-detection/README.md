@@ -12,7 +12,7 @@ system that unifies four signal types in a single database:
 
 - Docker and Docker Compose
 - `curl` and `jq`
-- Java 17+ and Maven 3.x (for the Java demo)
+- Java 21+ and Maven 3.x (for the Java demo)
 
 ## Quickstart
 

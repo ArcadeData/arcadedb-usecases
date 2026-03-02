@@ -166,7 +166,7 @@ Detect transactions whose behavioral embedding deviates from the customer's prof
 SELECT t.id, t.amount, t.merchant,
        vectorDistance(t.behavior_embedding, c.profile_embedding) AS deviation
 FROM Transaction t
-JOIN Customer c ON t.customer_id = c.id
+JOIN Customer c ON t.account_id = c.id
 WHERE vectorDistance(t.behavior_embedding, c.profile_embedding) > 0.7
 ORDER BY deviation DESC
 ```
@@ -176,11 +176,11 @@ ORDER BY deviation DESC
 Detect accounts with abnormally high transaction rates over a 5-minute window:
 
 ```sql
-SELECT account_id, rate(ts) AS current_tps
+SELECT account_id, count(*) AS txn_count, min(ts) AS first_txn, max(ts) AS last_txn
 FROM Transaction
-WHERE ts > now() - INTERVAL '5m'
+WHERE ts BETWEEN '2026-03-01T13:00:00Z' AND '2026-03-01T13:05:00Z'
 GROUP BY account_id
-HAVING current_tps > 2
+HAVING txn_count > 5
 ```
 
 ### Query 7: Correlated Account Activity (Time-Series Correlation)
@@ -188,11 +188,13 @@ HAVING current_tps > 2
 Detect coordinated transfer activity between two accounts:
 
 ```sql
-SELECT correlate(a.amount, b.amount) AS correlation
+SELECT a.account_id AS account_a, b.account_id AS account_b,
+       avg(a.amount) AS avg_a, avg(b.amount) AS avg_b,
+       count(*) AS matching_txns
 FROM Transaction a, Transaction b
 WHERE a.account_id = 'acct-A' AND b.account_id = 'acct-B'
-  AND a.ts > now() - INTERVAL '30d'
-  AND b.ts > now() - INTERVAL '30d'
+  AND a.ts >= '2026-02-01T00:00:00Z'
+  AND b.ts >= '2026-02-01T00:00:00Z'
 ```
 
 ### Query 8: Multi-Model Investigation (Combined)
