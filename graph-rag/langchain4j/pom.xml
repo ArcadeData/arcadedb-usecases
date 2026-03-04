@@ -15,7 +15,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <langchain4j.version>1.11.0</langchain4j.version>
     <langchain4j.community.version>1.11.0-beta19</langchain4j.community.version>
-    <neo4j.driver.version>4.4.12</neo4j.driver.version>
+    <neo4j.driver.version>6.0.3</neo4j.driver.version>
   </properties>
 
   <dependencies>
