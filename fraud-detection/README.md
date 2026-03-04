@@ -90,7 +90,7 @@ java -jar target/fraud-detection.jar
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.3.1-SNAPSHOT**. It uses:
+This use case targets ArcadeDB **26.3.1**. It uses:
 - `vectorCosineSimilarity()` for behavioral anomaly detection with `LSM_VECTOR` indexes
 - Subquery wrapping for `HAVING`-equivalent filtering (ArcadeDB does not support `HAVING`)
 - Cypher queries for graph traversal and cycle detection

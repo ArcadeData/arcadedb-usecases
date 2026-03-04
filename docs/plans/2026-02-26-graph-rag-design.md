@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-26
 **Branch:** feat/graph-rag
-**ArcadeDB version:** 26.2.1
+**ArcadeDB version:** 26.3.1
 
 ## Overview
 
@@ -37,7 +37,7 @@ graph-rag/
 
 ## Docker Compose
 
-- Single service: `arcadedata/arcadedb:26.2.1`
+- Single service: `arcadedata/arcadedb:26.3.1`
 - Ports exposed: `2480` (HTTP API), `2424` (Bolt)
 - Root password via `JAVA_OPTS: -Darcadedb.server.rootPassword=arcadedb`
 - Health check on `http://localhost:2480/api/v1/ready`
@@ -157,5 +157,5 @@ The following changes were made during integration testing:
 | `Chunk` as DOCUMENT TYPE | `Chunk` as VERTEX TYPE | Edges (MENTIONS, AUTHORED) require vertex endpoints |
 | `:Entity` label in Cypher | Unlabeled `(entity)` | ArcadeDB Cypher doesn't resolve parent type labels to subtypes |
 | `Neo4jEmbeddingStore` via langchain4j-community-neo4j | Direct Neo4j driver + LangChain4j `CosineSimilarity` | ArcadeDB doesn't support `SHOW VECTOR INDEX` DDL used by Neo4jEmbeddingStore |
-| `vectorDistance` in SQL subquery | Direct `vectorNeighbors` ordering | `vectorDistance` doesn't work in subqueries in ArcadeDB 26.2.1 |
+| `vectorDistance` in SQL subquery | Direct `vectorNeighbors` ordering | `vectorDistance` doesn't work in subqueries in ArcadeDB 26.3.1 |
 | Docker JAVA_OPTS single line | Multi-line with plugins | BoltProtocolPlugin must be explicitly enabled via `arcadedb.server.plugins` |

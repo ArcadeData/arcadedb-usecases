@@ -10,10 +10,10 @@ A collection of self-contained projects demonstrating [ArcadeDB](https://arcaded
 
 | Directory | Database Name | ArcadeDB Version | Java | Connectivity |
 |-----------|--------------|------------------|------|-------------|
-| `recommendation-engine/` | `RecommendationEngine` | 26.2.1 | 21 | HTTP API (`arcadedb-network`) |
-| `knowledge-graphs/` | `KnowledgeGraph` | 26.2.1 | 21 | HTTP API (`arcadedb-network`) |
-| `graph-rag/` | `GraphRAG` | 26.2.1 | 21 | Bolt (`neo4j-java-driver`) + LangChain4j |
-| `fraud-detection/` | `FraudDetection` | 26.3.1-SNAPSHOT | 21 | HTTP API (`arcadedb-network`) |
+| `recommendation-engine/` | `RecommendationEngine` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
+| `knowledge-graphs/` | `KnowledgeGraph` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
+| `graph-rag/` | `GraphRAG` | 26.3.1 | 21 | Bolt (`neo4j-java-driver`) + LangChain4j |
+| `fraud-detection/` | `FraudDetection` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
 
 ## Directory Structure (per use case)
 
@@ -65,13 +65,13 @@ Every use case follows this exact layout:
 
 ### Docker Compose
 - Root password: `JAVA_OPTS: "-Darcadedb.server.rootPassword=arcadedb"`
-  (not `ARCADEDB_SERVER_ROOTPASSWORD` — the env var doesn't work in 26.2.1)
+  (not `ARCADEDB_SERVER_ROOTPASSWORD` — the env var doesn't work in 26.3.1)
 - Healthcheck: `curl -sf http://localhost:2480/api/v1/ready`, interval 5s, retries 20
 - graph-rag additionally exposes port 7687 for Bolt (ArcadeDB defaults to 7687, not 2424)
 
 ## ArcadeDB API Quirks (Discovered During Implementation)
 
-- `vectorDistance()` does not exist in 26.2.1; use `vectorNeighbors('TypeName[property]', vector, k)` with an `LSM_VECTOR` index
+- `vectorDistance()` does not exist in 26.3.1; use `vectorNeighbors('TypeName[property]', vector, k)` with an `LSM_VECTOR` index
 - Vector indexes require the full index name format: `TypeName[propertyName]`
 - `LET $var = (SELECT ... GROUP BY ...)` syntax is not supported
 - `SEARCH_INDEX()` not supported in WHERE clauses; use `SEARCH_CLASS('query')` for full-text

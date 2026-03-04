@@ -76,7 +76,7 @@ java -jar target/recommendation-engine.jar
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.2.1**. Vector similarity queries use
+This use case targets ArcadeDB **26.3.1**. Vector similarity queries use
 `vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR`
 index. The index name format is `TypeName[propertyName]`.
 

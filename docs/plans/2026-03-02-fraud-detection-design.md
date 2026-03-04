@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-02
 **Branch:** feat/fraud-detection
-**ArcadeDB version:** 26.3.1-SNAPSHOT
+**ArcadeDB version:** 26.3.1
 
 ## Overview
 
@@ -30,7 +30,7 @@ fraud-detection/
 
 ## Docker Compose
 
-- Single service: `arcadedata/arcadedb:26.3.1-SNAPSHOT`
+- Single service: `arcadedata/arcadedb:26.3.1`
 - HTTP API port exposed: `2480`
 - Root credentials passed as environment variables (`JAVA_OPTS: -Darcadedb.server.rootPassword=arcadedb`)
 - Healthcheck on `/api/v1/ready`
@@ -222,7 +222,7 @@ All queries use hardcoded values matching `02-data.sql` (known account IDs, the 
 ## Java Program (`java/`)
 
 - **Build tool:** Maven (standalone `pom.xml`, no parent)
-- **Dependency:** `com.arcadedb:arcadedb-network:26.3.1-SNAPSHOT`
+- **Dependency:** `com.arcadedb:arcadedb-network:26.3.1`
 - **Output:** executable fat JAR via `maven-assembly-plugin` (`mvn package` → `java -jar target/fraud-detection.jar`)
 - **Entry point:** single `FraudDetection.java` with a `main` method that:
   1. Opens a `RemoteDatabase` connection to `localhost:2480`
@@ -245,7 +245,7 @@ All queries use hardcoded values matching `02-data.sql` (known account IDs, the 
 
 ## Success Criteria
 
-- `docker compose up` starts ArcadeDB 26.3.1-SNAPSHOT successfully
+- `docker compose up` starts ArcadeDB 26.3.1 successfully
 - SQL files apply cleanly via `setup.sh` with no errors
 - `queries.sh` runs all 8 queries and returns non-empty result sets
 - `mvn package && java -jar target/fraud-detection.jar` runs all 8 queries and prints results to stdout

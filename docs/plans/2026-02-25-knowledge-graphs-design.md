@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-25
 **Branch:** feat/knowledge-graphs
-**ArcadeDB version:** 26.2.1
+**ArcadeDB version:** 26.3.1
 
 ## Overview
 
@@ -33,7 +33,7 @@ arcadedb-usecases/
 
 ## Docker Compose
 
-- Single service: `arcadedata/arcadedb:26.2.1`
+- Single service: `arcadedata/arcadedb:26.3.1`
 - HTTP API port exposed: `2480`
 - Root credentials passed as environment variables (`ARCADEDB_SERVER_ROOTPASSWORD`)
 - No setup container — the README documents a one-time `setup.sh` invocation to create the database and apply the SQL files
@@ -93,7 +93,7 @@ All queries use hardcoded values matching `02-data.sql` so the script works out-
 ## Java Program (`java/`)
 
 - **Build tool:** Maven (standalone `pom.xml`, no parent)
-- **Dependency:** `com.arcadedb:arcadedb-network:26.2.1`
+- **Dependency:** `com.arcadedb:arcadedb-network:26.3.1`
 - **Output:** executable fat JAR via `maven-jar-plugin` (`mvn package` → `java -jar target/knowledge-graph.jar`)
 - **Entry point:** single `KnowledgeGraph.java` with a `main` method that:
   1. Opens a `RemoteDatabase` connection to `localhost:2480`

@@ -100,7 +100,7 @@ No external API keys required — the embedding model runs in-process.
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.2.1**. Vector similarity queries use
+This use case targets ArcadeDB **26.3.1**. Vector similarity queries use
 `vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR`
 index. The Bolt protocol (port 7687) enables Neo4j driver compatibility.
 

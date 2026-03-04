@@ -77,7 +77,7 @@ java -jar target/knowledge-graph.jar
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.2.1**. Vector similarity uses
+This use case targets ArcadeDB **26.3.1**. Vector similarity uses
 `vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR` index.
 Full-text search uses `SEARCH_INDEX('Paper[abstract]', 'query')` against a `FULL_TEXT` index on
 `Paper(abstract)`.

@@ -4,7 +4,7 @@
 
 **Goal:** Create `.github/workflows/fraud-detection.yml` — a matrix CI workflow that verifies both the `curl` and `java` runners for the fraud-detection use case on every push and pull request.
 
-**Architecture:** One `test` job with `matrix: runner: [curl, java]`. Each entry is self-contained: it starts ArcadeDB 26.3.1-SNAPSHOT via `docker compose up -d`, runs `./setup.sh` to load schema and data, runs the language-specific command, then tears down with `if: always()`. Pass criterion is exit code 0. Mirrors `.github/workflows/recommendation-engine.yml` exactly — same action versions, same SHA pins, same step structure.
+**Architecture:** One `test` job with `matrix: runner: [curl, java]`. Each entry is self-contained: it starts ArcadeDB 26.3.1 via `docker compose up -d`, runs `./setup.sh` to load schema and data, runs the language-specific command, then tears down with `if: always()`. Pass criterion is exit code 0. Mirrors `.github/workflows/recommendation-engine.yml` exactly — same action versions, same SHA pins, same step structure.
 
 **Tech Stack:** GitHub Actions, `actions/checkout@v6` (SHA `de0fac2e`), `actions/setup-java@v5` (SHA `be666c2f`, temurin 21), `actions/cache@v5` (SHA `cdf6c1fa`), Docker Compose, Maven 3.x, Java 21, bash/curl/jq (pre-installed on `ubuntu-latest`)
 
@@ -126,10 +126,10 @@ Expected: a `Fraud Detection CI` run appears with two jobs — `test (curl)` and
 
 Both `test (curl)` and `test (java)` should show green checkmarks. If either fails, check the step-level logs:
 
-- **Start ArcadeDB fails:** confirm `docker compose up -d` runs from the `fraud-detection/` directory — check `working-directory`. Note: uses `arcadedata/arcadedb:26.3.1-SNAPSHOT` which must be available on Docker Hub; if the image doesn't exist yet, the job will fail at this step
+- **Start ArcadeDB fails:** confirm `docker compose up -d` runs from the `fraud-detection/` directory — check `working-directory`. Note: uses `arcadedata/arcadedb:26.3.1` which must be available on Docker Hub; if the image doesn't exist yet, the job will fail at this step
 - **Setup database fails:** `setup.sh` may be timing out waiting for ArcadeDB; check if the healthcheck `retries: 20` at 5s intervals (100s total) is enough — if not, add a `docker compose ps` debug step before `setup.sh`
-- **curl queries fail:** confirm `jq` is available with `which jq`; check the `ARCADEDB_PASS` env var is picked up by `queries.sh`. Some queries use ArcadeDB 26.3.1-SNAPSHOT features (`time_bucket`, `vectorDistance`, `full_name.similarity`) — if the server version doesn't support them, the query will return an error
-- **Java build fails:** the `arcadedb-network:26.3.1-SNAPSHOT` dependency must be available in Maven Central or a configured snapshot repository; if not, `mvn package` will fail resolving dependencies
+- **curl queries fail:** confirm `jq` is available with `which jq`; check the `ARCADEDB_PASS` env var is picked up by `queries.sh`. Some queries use ArcadeDB 26.3.1 features (`time_bucket`, `vectorDistance`, `full_name.similarity`) — if the server version doesn't support them, the query will return an error
+- **Java build fails:** the `arcadedb-network:26.3.1` dependency must be available in Maven Central or a configured snapshot repository; if not, `mvn package` will fail resolving dependencies
 - **Java run fails:** the fat JAR should be at `target/fraud-detection.jar`; confirm `finalName` in `pom.xml` matches
 
 **Step 3: No further commit needed if both pass**

@@ -4,13 +4,13 @@
 
 **Goal:** Build a fully self-contained `recommendation-engine/` directory demonstrating ArcadeDB's multi-model capabilities (graph traversal, vector similarity, time-series) via five query patterns, runnable with both `curl` and a Java program.
 
-**Architecture:** Self-contained directory per the design doc. Docker Compose brings up ArcadeDB 26.2.1. A `setup.sh` creates the database and applies SQL files. Five queries are demonstrated via `queries/queries.sh` (curl) and `java/` (Maven fat JAR using `arcadedb-network`).
+**Architecture:** Self-contained directory per the design doc. Docker Compose brings up ArcadeDB 26.3.1. A `setup.sh` creates the database and applies SQL files. Five queries are demonstrated via `queries/queries.sh` (curl) and `java/` (Maven fat JAR using `arcadedb-network`).
 
-**Tech Stack:** ArcadeDB 26.2.1, Docker Compose, Maven 3.x, Java 17+, `com.arcadedb:arcadedb-network:26.2.1`, `jq` (for setup script)
+**Tech Stack:** ArcadeDB 26.3.1, Docker Compose, Maven 3.x, Java 17+, `com.arcadedb:arcadedb-network:26.3.1`, `jq` (for setup script)
 
 > **Implementation notes (deviations from this plan discovered during execution):**
-> - `ARCADEDB_SERVER_ROOTPASSWORD` env var not picked up by 26.2.1 Docker image; replaced with `JAVA_OPTS: "-Darcadedb.server.rootPassword=arcadedb"`
-> - `vectorDistance()` does not exist in 26.2.1; replaced with `vectorNeighbors('TypeName[property]', vector, k)` (requires an `LSM_VECTOR` index)
+> - `ARCADEDB_SERVER_ROOTPASSWORD` env var not picked up by 26.3.1 Docker image; replaced with `JAVA_OPTS: "-Darcadedb.server.rootPassword=arcadedb"`
+> - `vectorDistance()` does not exist in 26.3.1; replaced with `vectorNeighbors('TypeName[property]', vector, k)` (requires an `LSM_VECTOR` index)
 > - `LET $var = (SELECT ... GROUP BY ...)` syntax not supported; Query 4 simplified to a plain MATCH-based graph traversal (collaborative filtering for shows)
 > - Vector indexes require the full index name `TypeName[propertyName]` as the first argument to `vectorNeighbors()`
 
@@ -71,7 +71,7 @@ git commit -m "chore: scaffold recommendation-engine directory structure"
 ```yaml
 services:
   arcadedb:
-    image: arcadedata/arcadedb:26.2.1
+    image: arcadedata/arcadedb:26.3.1
     ports:
       - "2480:2480"
     environment:
@@ -106,7 +106,7 @@ Expected: HTTP 200 with a JSON response containing `"ready"`.
 
 ```bash
 git add recommendation-engine/docker-compose.yml
-git commit -m "feat(recommendation-engine): add docker-compose for ArcadeDB 26.2.1"
+git commit -m "feat(recommendation-engine): add docker-compose for ArcadeDB 26.3.1"
 ```
 
 ---
@@ -511,7 +511,7 @@ git commit -m "feat(recommendation-engine): add curl query demonstrations"
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <arcadedb.version>26.2.1</arcadedb.version>
+    <arcadedb.version>26.3.1</arcadedb.version>
   </properties>
 
   <dependencies>
@@ -779,7 +779,7 @@ java -jar target/recommendation-engine.jar
 
 Expected: 5 sections of output, each showing a query header followed by result rows. No stack traces or connection errors.
 
-**Step 3: If a query throws an exception**, note the error message — the SQL/Cypher may need minor adjustment for ArcadeDB 26.2.1. Common adjustments:
+**Step 3: If a query throws an exception**, note the error message — the SQL/Cypher may need minor adjustment for ArcadeDB 26.3.1. Common adjustments:
 - If Query 4 (LET) fails: simplify to two separate queries in the Java code, printing both result sets.
 - If `vectorDistance` syntax differs: try `distance(embedding, [0.9, 0.1, 0.1, 0.1])`.
 - If Cypher `MATCH (p:Product)` without a relationship pattern fails: use `MATCH (p:Product) WHERE p.category = 'Electronics'` directly.

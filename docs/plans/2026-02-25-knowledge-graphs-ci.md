@@ -178,7 +178,7 @@ Both `test (curl)` and `test (java)` should show green checkmarks. If either fai
 - **Start ArcadeDB fails:** confirm `docker compose up -d` runs from `knowledge-graphs/` — check `working-directory`
 - **Setup database fails:** `setup.sh` polls with `until curl ... /api/v1/ready` — if ArcadeDB is slow, it will retry every 2s; check the log for repeated "Waiting" messages
 - **curl queries fail:** Q3 uses `SEARCH_INDEX` (not `SEARCH_CLASS`) and Q5 uses hardcoded IDs `['p2', 'p8', 'p4']` — these were verified locally in the smoke test
-- **Java build fails:** confirm Maven resolves `arcadedb-network:26.2.1` from Maven Central; check `~/.m2` cache step
+- **Java build fails:** confirm Maven resolves `arcadedb-network:26.3.1` from Maven Central; check `~/.m2` cache step
 - **Java run fails:** the fat JAR is at `target/knowledge-graph.jar` — confirm `finalName` in `knowledge-graphs/java/pom.xml` is `knowledge-graph`
 
 **Step 3: No further commit needed if both pass**

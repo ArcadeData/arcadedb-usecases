@@ -6,7 +6,7 @@
 
 **Architecture:** Mirror the `recommendation-engine/` structure exactly — `docker-compose.yml`, `setup.sh`, `sql/`, `queries/queries.sh`, and a standalone Maven fat JAR. Five labeled curl queries each target one or two ArcadeDB capability pillars. The Java program runs the same five queries via `RemoteDatabase`.
 
-**Tech Stack:** ArcadeDB 26.2.1, SQL + Cypher query languages, Maven 3.x + Java 21, `arcadedb-network:26.2.1`
+**Tech Stack:** ArcadeDB 26.3.1, SQL + Cypher query languages, Maven 3.x + Java 21, `arcadedb-network:26.3.1`
 
 ---
 
@@ -85,7 +85,7 @@ git commit -m "feat: scaffold knowledge-graphs directory structure"
 ```yaml
 services:
   arcadedb:
-    image: arcadedata/arcadedb:26.2.1
+    image: arcadedata/arcadedb:26.3.1
     ports:
       - "2480:2480"
     environment:
@@ -529,7 +529,7 @@ git commit -m "feat: add knowledge-graphs curl queries"
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <arcadedb.version>26.2.1</arcadedb.version>
+    <arcadedb.version>26.3.1</arcadedb.version>
   </properties>
 
   <dependencies>
@@ -854,7 +854,7 @@ java -jar target/knowledge-graph.jar
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.2.1**. Vector similarity uses
+This use case targets ArcadeDB **26.3.1**. Vector similarity uses
 `vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR` index.
 Full-text search uses `SEARCH_CLASS('query')` against a `FULL_TEXT` index on
 `Paper(abstract)`.
