@@ -1,12 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "maven"
-    directory: "/recommendation-engine/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-
+  # ── GitHub Actions ───────────────────────────────────────────────────────────
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -21,10 +15,118 @@ updates:
           - "minor"
           - "patch"
 
+  # ── Maven ────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "maven"
+    directory: "/recommendation-engine/java"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      arcadedb:
+        patterns:
+          - "com.arcadedb:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
+  - package-ecosystem: "maven"
+    directory: "/knowledge-graphs/java"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      arcadedb:
+        patterns:
+          - "com.arcadedb:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
+  - package-ecosystem: "maven"
+    directory: "/graph-rag/java"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      neo4j:
+        patterns:
+          - "org.neo4j.driver:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
+  - package-ecosystem: "maven"
+    directory: "/graph-rag/langchain4j"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      langchain4j:
+        patterns:
+          - "dev.langchain4j:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
+  - package-ecosystem: "maven"
+    directory: "/fraud-detection/java"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      arcadedb:
+        patterns:
+          - "com.arcadedb:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
+  # ── Docker Compose ──────────────────────────────────────────────────────────
   - package-ecosystem: "docker-compose"
     directory: "/recommendation-engine"
     schedule:
       interval: weekly
       day: "sunday"
     open-pull-requests-limit: 10
+    groups:
+      arcadedb-docker:
+        patterns:
+          - "arcadedata/arcadedb"
 
+  - package-ecosystem: "docker-compose"
+    directory: "/knowledge-graphs"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      arcadedb-docker:
+        patterns:
+          - "arcadedata/arcadedb"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/graph-rag"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      arcadedb-docker:
+        patterns:
+          - "arcadedata/arcadedb"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/fraud-detection"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      arcadedb-docker:
+        patterns:
+          - "arcadedata/arcadedb"
