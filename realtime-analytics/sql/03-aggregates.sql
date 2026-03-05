@@ -1,0 +1,1 @@
+CREATE CONTINUOUS AGGREGATE hourly_sensor_temps AS SELECT ts.timeBucket('1h', ts) AS hour, sensor_id, avg(temperature) AS avg_temp, max(temperature) AS max_temp, min(temperature) AS min_temp FROM SensorReading GROUP BY hour, sensor_id
