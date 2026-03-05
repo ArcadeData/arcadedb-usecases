@@ -46,10 +46,10 @@ echo "=== Query 2: Engagement Time-Series ==="
 echo "Drill into the viral post's engagement growth over time."
 echo ""
 query "sql" "
-SELECT timestamp, likes, shares, comments
+SELECT recordedAt, likes, shares, comments
 FROM EngagementMetric
 WHERE postRid = 'ai-trends-2026'
-ORDER BY timestamp
+ORDER BY recordedAt
 "
 
 # ─────────────────────────────────────────────────────────────────────────────

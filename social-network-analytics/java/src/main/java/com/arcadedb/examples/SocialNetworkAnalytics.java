@@ -63,16 +63,16 @@ public class SocialNetworkAnalytics {
 
     String sql =
         """
-            SELECT timestamp, likes, shares, comments
+            SELECT recordedAt, likes, shares, comments
             FROM EngagementMetric
             WHERE postRid = 'ai-trends-2026'
-            ORDER BY timestamp""";
+            ORDER BY recordedAt""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
         System.out.printf("  %s | likes: %-5s | shares: %-5s | comments: %s%n",
-            r.getProperty("timestamp"),
+            r.getProperty("recordedAt"),
             r.getProperty("likes"),
             r.getProperty("shares"),
             r.getProperty("comments"));

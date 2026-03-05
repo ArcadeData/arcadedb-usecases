@@ -132,50 +132,50 @@ CREATE EDGE MEMBER_OF FROM (SELECT FROM User WHERE handle = 'grace') TO (SELECT 
 CREATE EDGE MEMBER_OF FROM (SELECT FROM User WHERE handle = 'diana') TO (SELECT FROM Group WHERE name = 'Gamers')
 -- EngagementMetric time-series (3 snapshots per post: hour 1, 2, 3)
 -- AI Trends in 2026 (viral — rapid growth)
-INSERT INTO EngagementMetric SET postRid = 'ai-trends-2026', timestamp = '2026-03-01T10:00:00Z', likes = 5, shares = 2, comments = 3
-INSERT INTO EngagementMetric SET postRid = 'ai-trends-2026', timestamp = '2026-03-01T11:00:00Z', likes = 15, shares = 8, comments = 10
-INSERT INTO EngagementMetric SET postRid = 'ai-trends-2026', timestamp = '2026-03-01T12:00:00Z', likes = 30, shares = 15, comments = 20
+INSERT INTO EngagementMetric SET postRid = 'ai-trends-2026', recordedAt = '2026-03-01T10:00:00Z', likes = 5, shares = 2, comments = 3
+INSERT INTO EngagementMetric SET postRid = 'ai-trends-2026', recordedAt = '2026-03-01T11:00:00Z', likes = 15, shares = 8, comments = 10
+INSERT INTO EngagementMetric SET postRid = 'ai-trends-2026', recordedAt = '2026-03-01T12:00:00Z', likes = 30, shares = 15, comments = 20
 -- Building REST APIs (steady)
-INSERT INTO EngagementMetric SET postRid = 'building-rest-apis', timestamp = '2026-03-01T11:00:00Z', likes = 3, shares = 1, comments = 2
-INSERT INTO EngagementMetric SET postRid = 'building-rest-apis', timestamp = '2026-03-01T12:00:00Z', likes = 5, shares = 2, comments = 3
-INSERT INTO EngagementMetric SET postRid = 'building-rest-apis', timestamp = '2026-03-01T13:00:00Z', likes = 7, shares = 2, comments = 4
+INSERT INTO EngagementMetric SET postRid = 'building-rest-apis', recordedAt = '2026-03-01T11:00:00Z', likes = 3, shares = 1, comments = 2
+INSERT INTO EngagementMetric SET postRid = 'building-rest-apis', recordedAt = '2026-03-01T12:00:00Z', likes = 5, shares = 2, comments = 3
+INSERT INTO EngagementMetric SET postRid = 'building-rest-apis', recordedAt = '2026-03-01T13:00:00Z', likes = 7, shares = 2, comments = 4
 -- Guitar Techniques (moderate growth)
-INSERT INTO EngagementMetric SET postRid = 'guitar-techniques', timestamp = '2026-03-01T12:00:00Z', likes = 4, shares = 2, comments = 1
-INSERT INTO EngagementMetric SET postRid = 'guitar-techniques', timestamp = '2026-03-01T13:00:00Z', likes = 8, shares = 4, comments = 3
-INSERT INTO EngagementMetric SET postRid = 'guitar-techniques', timestamp = '2026-03-01T14:00:00Z', likes = 12, shares = 6, comments = 5
+INSERT INTO EngagementMetric SET postRid = 'guitar-techniques', recordedAt = '2026-03-01T12:00:00Z', likes = 4, shares = 2, comments = 1
+INSERT INTO EngagementMetric SET postRid = 'guitar-techniques', recordedAt = '2026-03-01T13:00:00Z', likes = 8, shares = 4, comments = 3
+INSERT INTO EngagementMetric SET postRid = 'guitar-techniques', recordedAt = '2026-03-01T14:00:00Z', likes = 12, shares = 6, comments = 5
 -- Concert Review (peaks early then plateaus)
-INSERT INTO EngagementMetric SET postRid = 'concert-review', timestamp = '2026-03-01T13:00:00Z', likes = 8, shares = 1, comments = 5
-INSERT INTO EngagementMetric SET postRid = 'concert-review', timestamp = '2026-03-01T14:00:00Z', likes = 10, shares = 1, comments = 6
-INSERT INTO EngagementMetric SET postRid = 'concert-review', timestamp = '2026-03-01T15:00:00Z', likes = 11, shares = 1, comments = 6
+INSERT INTO EngagementMetric SET postRid = 'concert-review', recordedAt = '2026-03-01T13:00:00Z', likes = 8, shares = 1, comments = 5
+INSERT INTO EngagementMetric SET postRid = 'concert-review', recordedAt = '2026-03-01T14:00:00Z', likes = 10, shares = 1, comments = 6
+INSERT INTO EngagementMetric SET postRid = 'concert-review', recordedAt = '2026-03-01T15:00:00Z', likes = 11, shares = 1, comments = 6
 -- Marathon Training (slow and steady)
-INSERT INTO EngagementMetric SET postRid = 'marathon-training', timestamp = '2026-03-02T09:00:00Z', likes = 2, shares = 1, comments = 1
-INSERT INTO EngagementMetric SET postRid = 'marathon-training', timestamp = '2026-03-02T10:00:00Z', likes = 4, shares = 2, comments = 2
-INSERT INTO EngagementMetric SET postRid = 'marathon-training', timestamp = '2026-03-02T11:00:00Z', likes = 6, shares = 3, comments = 3
+INSERT INTO EngagementMetric SET postRid = 'marathon-training', recordedAt = '2026-03-02T09:00:00Z', likes = 2, shares = 1, comments = 1
+INSERT INTO EngagementMetric SET postRid = 'marathon-training', recordedAt = '2026-03-02T10:00:00Z', likes = 4, shares = 2, comments = 2
+INSERT INTO EngagementMetric SET postRid = 'marathon-training', recordedAt = '2026-03-02T11:00:00Z', likes = 6, shares = 3, comments = 3
 -- Database Performance (moderate)
-INSERT INTO EngagementMetric SET postRid = 'database-performance', timestamp = '2026-03-02T10:00:00Z', likes = 3, shares = 1, comments = 2
-INSERT INTO EngagementMetric SET postRid = 'database-performance', timestamp = '2026-03-02T11:00:00Z', likes = 6, shares = 2, comments = 4
-INSERT INTO EngagementMetric SET postRid = 'database-performance', timestamp = '2026-03-02T12:00:00Z', likes = 8, shares = 3, comments = 5
+INSERT INTO EngagementMetric SET postRid = 'database-performance', recordedAt = '2026-03-02T10:00:00Z', likes = 3, shares = 1, comments = 2
+INSERT INTO EngagementMetric SET postRid = 'database-performance', recordedAt = '2026-03-02T11:00:00Z', likes = 6, shares = 2, comments = 4
+INSERT INTO EngagementMetric SET postRid = 'database-performance', recordedAt = '2026-03-02T12:00:00Z', likes = 8, shares = 3, comments = 5
 -- Tokyo Travel Guide (moderate growth)
-INSERT INTO EngagementMetric SET postRid = 'tokyo-travel-guide', timestamp = '2026-03-02T11:00:00Z', likes = 5, shares = 2, comments = 3
-INSERT INTO EngagementMetric SET postRid = 'tokyo-travel-guide', timestamp = '2026-03-02T12:00:00Z', likes = 9, shares = 4, comments = 5
-INSERT INTO EngagementMetric SET postRid = 'tokyo-travel-guide', timestamp = '2026-03-02T13:00:00Z', likes = 12, shares = 5, comments = 7
+INSERT INTO EngagementMetric SET postRid = 'tokyo-travel-guide', recordedAt = '2026-03-02T11:00:00Z', likes = 5, shares = 2, comments = 3
+INSERT INTO EngagementMetric SET postRid = 'tokyo-travel-guide', recordedAt = '2026-03-02T12:00:00Z', likes = 9, shares = 4, comments = 5
+INSERT INTO EngagementMetric SET postRid = 'tokyo-travel-guide', recordedAt = '2026-03-02T13:00:00Z', likes = 12, shares = 5, comments = 7
 -- Game Dev Tips (niche but engaged)
-INSERT INTO EngagementMetric SET postRid = 'game-dev-tips', timestamp = '2026-03-02T12:00:00Z', likes = 2, shares = 0, comments = 3
-INSERT INTO EngagementMetric SET postRid = 'game-dev-tips', timestamp = '2026-03-02T13:00:00Z', likes = 4, shares = 1, comments = 5
-INSERT INTO EngagementMetric SET postRid = 'game-dev-tips', timestamp = '2026-03-02T14:00:00Z', likes = 5, shares = 1, comments = 7
+INSERT INTO EngagementMetric SET postRid = 'game-dev-tips', recordedAt = '2026-03-02T12:00:00Z', likes = 2, shares = 0, comments = 3
+INSERT INTO EngagementMetric SET postRid = 'game-dev-tips', recordedAt = '2026-03-02T13:00:00Z', likes = 4, shares = 1, comments = 5
+INSERT INTO EngagementMetric SET postRid = 'game-dev-tips', recordedAt = '2026-03-02T14:00:00Z', likes = 5, shares = 1, comments = 7
 -- Vinyl Collecting (low engagement)
-INSERT INTO EngagementMetric SET postRid = 'vinyl-collecting', timestamp = '2026-03-03T10:00:00Z', likes = 2, shares = 0, comments = 1
-INSERT INTO EngagementMetric SET postRid = 'vinyl-collecting', timestamp = '2026-03-03T11:00:00Z', likes = 3, shares = 1, comments = 1
-INSERT INTO EngagementMetric SET postRid = 'vinyl-collecting', timestamp = '2026-03-03T12:00:00Z', likes = 4, shares = 1, comments = 2
+INSERT INTO EngagementMetric SET postRid = 'vinyl-collecting', recordedAt = '2026-03-03T10:00:00Z', likes = 2, shares = 0, comments = 1
+INSERT INTO EngagementMetric SET postRid = 'vinyl-collecting', recordedAt = '2026-03-03T11:00:00Z', likes = 3, shares = 1, comments = 1
+INSERT INTO EngagementMetric SET postRid = 'vinyl-collecting', recordedAt = '2026-03-03T12:00:00Z', likes = 4, shares = 1, comments = 2
 -- Rock Climbing Basics (moderate)
-INSERT INTO EngagementMetric SET postRid = 'rock-climbing-basics', timestamp = '2026-03-03T11:00:00Z', likes = 3, shares = 1, comments = 2
-INSERT INTO EngagementMetric SET postRid = 'rock-climbing-basics', timestamp = '2026-03-03T12:00:00Z', likes = 5, shares = 2, comments = 3
-INSERT INTO EngagementMetric SET postRid = 'rock-climbing-basics', timestamp = '2026-03-03T13:00:00Z', likes = 7, shares = 2, comments = 4
+INSERT INTO EngagementMetric SET postRid = 'rock-climbing-basics', recordedAt = '2026-03-03T11:00:00Z', likes = 3, shares = 1, comments = 2
+INSERT INTO EngagementMetric SET postRid = 'rock-climbing-basics', recordedAt = '2026-03-03T12:00:00Z', likes = 5, shares = 2, comments = 3
+INSERT INTO EngagementMetric SET postRid = 'rock-climbing-basics', recordedAt = '2026-03-03T13:00:00Z', likes = 7, shares = 2, comments = 4
 -- Backpacking Europe (grows steadily)
-INSERT INTO EngagementMetric SET postRid = 'backpacking-europe', timestamp = '2026-03-03T12:00:00Z', likes = 4, shares = 2, comments = 2
-INSERT INTO EngagementMetric SET postRid = 'backpacking-europe', timestamp = '2026-03-03T13:00:00Z', likes = 8, shares = 4, comments = 4
-INSERT INTO EngagementMetric SET postRid = 'backpacking-europe', timestamp = '2026-03-03T14:00:00Z', likes = 13, shares = 6, comments = 6
+INSERT INTO EngagementMetric SET postRid = 'backpacking-europe', recordedAt = '2026-03-03T12:00:00Z', likes = 4, shares = 2, comments = 2
+INSERT INTO EngagementMetric SET postRid = 'backpacking-europe', recordedAt = '2026-03-03T13:00:00Z', likes = 8, shares = 4, comments = 4
+INSERT INTO EngagementMetric SET postRid = 'backpacking-europe', recordedAt = '2026-03-03T14:00:00Z', likes = 13, shares = 6, comments = 6
 -- Open Source Databases (strong engagement)
-INSERT INTO EngagementMetric SET postRid = 'open-source-databases', timestamp = '2026-03-03T13:00:00Z', likes = 6, shares = 3, comments = 4
-INSERT INTO EngagementMetric SET postRid = 'open-source-databases', timestamp = '2026-03-03T14:00:00Z', likes = 12, shares = 5, comments = 7
-INSERT INTO EngagementMetric SET postRid = 'open-source-databases', timestamp = '2026-03-03T15:00:00Z', likes = 18, shares = 8, comments = 10
+INSERT INTO EngagementMetric SET postRid = 'open-source-databases', recordedAt = '2026-03-03T13:00:00Z', likes = 6, shares = 3, comments = 4
+INSERT INTO EngagementMetric SET postRid = 'open-source-databases', recordedAt = '2026-03-03T14:00:00Z', likes = 12, shares = 5, comments = 7
+INSERT INTO EngagementMetric SET postRid = 'open-source-databases', recordedAt = '2026-03-03T15:00:00Z', likes = 18, shares = 8, comments = 10
