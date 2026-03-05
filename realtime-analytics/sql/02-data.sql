@@ -47,49 +47,53 @@ CREATE EDGE DEPENDS_ON FROM (SELECT FROM Service WHERE service_id = 'api-gateway
 CREATE EDGE DEPENDS_ON FROM (SELECT FROM Service WHERE service_id = 'user-service') TO (SELECT FROM Service WHERE service_id = 'payment-service')
 CREATE EDGE DEPENDS_ON FROM (SELECT FROM Service WHERE service_id = 'payment-service') TO (SELECT FROM Service WHERE service_id = 'notification-service')
 -- SensorReading time-series data (2-hour window, 10-15 min intervals)
+-- Timestamps are epoch milliseconds for 2026-02-20 (ts column is LONG)
+-- 10:00 = 1771581600000, 10:05 = 1771581900000, 10:10 = 1771582200000
+-- 10:15 = 1771582500000, 10:30 = 1771583400000, 10:45 = 1771584300000
+-- 11:00 = 1771585200000, 11:15 = 1771586100000, 11:30 = 1771587000000
 -- s-A (HQ-1): regular readings
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:00:00Z', 's-A', 'hq', 22.1, 55.0, 1013.2)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:15:00Z', 's-A', 'hq', 22.3, 55.2, 1013.1)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:30:00Z', 's-A', 'hq', 22.5, 55.5, 1013.0)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:45:00Z', 's-A', 'hq', 23.0, 56.0, 1012.9)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:00:00Z', 's-A', 'hq', 23.2, 56.3, 1012.8)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:15:00Z', 's-A', 'hq', 23.8, 57.0, 1012.7)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:30:00Z', 's-A', 'hq', 24.1, 57.5, 1012.6)
+INSERT INTO SensorReading SET ts = 1771581600000, sensor_id = 's-A', location = 'hq', temperature = 22.1, humidity = 55.0, pressure = 1013.2
+INSERT INTO SensorReading SET ts = 1771582500000, sensor_id = 's-A', location = 'hq', temperature = 22.3, humidity = 55.2, pressure = 1013.1
+INSERT INTO SensorReading SET ts = 1771583400000, sensor_id = 's-A', location = 'hq', temperature = 22.5, humidity = 55.5, pressure = 1013.0
+INSERT INTO SensorReading SET ts = 1771584300000, sensor_id = 's-A', location = 'hq', temperature = 23.0, humidity = 56.0, pressure = 1012.9
+INSERT INTO SensorReading SET ts = 1771585200000, sensor_id = 's-A', location = 'hq', temperature = 23.2, humidity = 56.3, pressure = 1012.8
+INSERT INTO SensorReading SET ts = 1771586100000, sensor_id = 's-A', location = 'hq', temperature = 23.8, humidity = 57.0, pressure = 1012.7
+INSERT INTO SensorReading SET ts = 1771587000000, sensor_id = 's-A', location = 'hq', temperature = 24.1, humidity = 57.5, pressure = 1012.6
 -- s-B (HQ-1)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:00:00Z', 's-B', 'hq', 21.8, 54.0, 1013.3)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:30:00Z', 's-B', 'hq', 22.0, 54.5, 1013.1)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:00:00Z', 's-B', 'hq', 22.5, 55.0, 1012.9)
+INSERT INTO SensorReading SET ts = 1771581600000, sensor_id = 's-B', location = 'hq', temperature = 21.8, humidity = 54.0, pressure = 1013.3
+INSERT INTO SensorReading SET ts = 1771583400000, sensor_id = 's-B', location = 'hq', temperature = 22.0, humidity = 54.5, pressure = 1013.1
+INSERT INTO SensorReading SET ts = 1771585200000, sensor_id = 's-B', location = 'hq', temperature = 22.5, humidity = 55.0, pressure = 1012.9
 -- s-C (HQ-2): deliberate gap between 10:15 and 11:00 for interpolation query
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:00:00Z', 's-C', 'hq', 23.0, 58.0, 1013.0)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:15:00Z', 's-C', 'hq', 23.2, 58.2, 1012.9)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:00:00Z', 's-C', 'hq', 25.0, 60.0, 1012.5)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:30:00Z', 's-C', 'hq', 25.5, 61.0, 1012.3)
+INSERT INTO SensorReading SET ts = 1771581600000, sensor_id = 's-C', location = 'hq', temperature = 23.0, humidity = 58.0, pressure = 1013.0
+INSERT INTO SensorReading SET ts = 1771582500000, sensor_id = 's-C', location = 'hq', temperature = 23.2, humidity = 58.2, pressure = 1012.9
+INSERT INTO SensorReading SET ts = 1771585200000, sensor_id = 's-C', location = 'hq', temperature = 25.0, humidity = 60.0, pressure = 1012.5
+INSERT INTO SensorReading SET ts = 1771587000000, sensor_id = 's-C', location = 'hq', temperature = 25.5, humidity = 61.0, pressure = 1012.3
 -- s-D (DC-1)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:00:00Z', 's-D', 'dc', 19.0, 45.0, 1014.0)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:30:00Z', 's-D', 'dc', 19.2, 45.5, 1013.9)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:00:00Z', 's-D', 'dc', 19.5, 46.0, 1013.8)
+INSERT INTO SensorReading SET ts = 1771581600000, sensor_id = 's-D', location = 'dc', temperature = 19.0, humidity = 45.0, pressure = 1014.0
+INSERT INTO SensorReading SET ts = 1771583400000, sensor_id = 's-D', location = 'dc', temperature = 19.2, humidity = 45.5, pressure = 1013.9
+INSERT INTO SensorReading SET ts = 1771585200000, sensor_id = 's-D', location = 'dc', temperature = 19.5, humidity = 46.0, pressure = 1013.8
 -- s-E (DC-1)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:00:00Z', 's-E', 'dc', 18.5, 44.0, 1014.1)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:00:00Z', 's-E', 'dc', 18.8, 44.5, 1014.0)
+INSERT INTO SensorReading SET ts = 1771581600000, sensor_id = 's-E', location = 'dc', temperature = 18.5, humidity = 44.0, pressure = 1014.1
+INSERT INTO SensorReading SET ts = 1771585200000, sensor_id = 's-E', location = 'dc', temperature = 18.8, humidity = 44.5, pressure = 1014.0
 -- s-F (DC-2)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T10:00:00Z', 's-F', 'dc', 20.0, 48.0, 1013.5)
-INSERT INTO SensorReading (ts, sensor_id, location, temperature, humidity, pressure) VALUES ('2026-02-20T11:00:00Z', 's-F', 'dc', 20.5, 48.5, 1013.3)
+INSERT INTO SensorReading SET ts = 1771581600000, sensor_id = 's-F', location = 'dc', temperature = 20.0, humidity = 48.0, pressure = 1013.5
+INSERT INTO SensorReading SET ts = 1771585200000, sensor_id = 's-F', location = 'dc', temperature = 20.5, humidity = 48.5, pressure = 1013.3
 -- ServiceMetrics time-series data (same 2-hour window)
 -- api-gateway on srv-1: high traffic
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:00:00Z', 'api-gateway', 'srv-1', 15000, 12, 45.2)
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:05:00Z', 'api-gateway', 'srv-1', 15500, 8, 42.1)
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:10:00Z', 'api-gateway', 'srv-1', 16200, 15, 48.7)
+INSERT INTO ServiceMetrics SET ts = 1771581600000, service_id = 'api-gateway', server_id = 'srv-1', request_count = 15000, error_count = 12, latency_ms = 45.2
+INSERT INTO ServiceMetrics SET ts = 1771581900000, service_id = 'api-gateway', server_id = 'srv-1', request_count = 15500, error_count = 8, latency_ms = 42.1
+INSERT INTO ServiceMetrics SET ts = 1771582200000, service_id = 'api-gateway', server_id = 'srv-1', request_count = 16200, error_count = 15, latency_ms = 48.7
 -- auth-service on srv-1
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:00:00Z', 'auth-service', 'srv-1', 8000, 3, 22.0)
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:05:00Z', 'auth-service', 'srv-1', 8200, 2, 21.5)
+INSERT INTO ServiceMetrics SET ts = 1771581600000, service_id = 'auth-service', server_id = 'srv-1', request_count = 8000, error_count = 3, latency_ms = 22.0
+INSERT INTO ServiceMetrics SET ts = 1771581900000, service_id = 'auth-service', server_id = 'srv-1', request_count = 8200, error_count = 2, latency_ms = 21.5
 -- user-service on srv-2
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:00:00Z', 'user-service', 'srv-2', 5000, 5, 35.0)
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:05:00Z', 'user-service', 'srv-2', 5200, 4, 33.8)
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:10:00Z', 'user-service', 'srv-2', 5100, 6, 36.5)
+INSERT INTO ServiceMetrics SET ts = 1771581600000, service_id = 'user-service', server_id = 'srv-2', request_count = 5000, error_count = 5, latency_ms = 35.0
+INSERT INTO ServiceMetrics SET ts = 1771581900000, service_id = 'user-service', server_id = 'srv-2', request_count = 5200, error_count = 4, latency_ms = 33.8
+INSERT INTO ServiceMetrics SET ts = 1771582200000, service_id = 'user-service', server_id = 'srv-2', request_count = 5100, error_count = 6, latency_ms = 36.5
 -- payment-service on srv-2: some errors
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:00:00Z', 'payment-service', 'srv-2', 2000, 25, 120.5)
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:05:00Z', 'payment-service', 'srv-2', 2100, 30, 135.2)
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:10:00Z', 'payment-service', 'srv-2', 1800, 45, 180.0)
+INSERT INTO ServiceMetrics SET ts = 1771581600000, service_id = 'payment-service', server_id = 'srv-2', request_count = 2000, error_count = 25, latency_ms = 120.5
+INSERT INTO ServiceMetrics SET ts = 1771581900000, service_id = 'payment-service', server_id = 'srv-2', request_count = 2100, error_count = 30, latency_ms = 135.2
+INSERT INTO ServiceMetrics SET ts = 1771582200000, service_id = 'payment-service', server_id = 'srv-2', request_count = 1800, error_count = 45, latency_ms = 180.0
 -- notification-service on srv-3
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:00:00Z', 'notification-service', 'srv-3', 3000, 1, 15.0)
-INSERT INTO ServiceMetrics (ts, service_id, server_id, request_count, error_count, latency_ms) VALUES ('2026-02-20T10:05:00Z', 'notification-service', 'srv-3', 3100, 0, 14.5)
+INSERT INTO ServiceMetrics SET ts = 1771581600000, service_id = 'notification-service', server_id = 'srv-3', request_count = 3000, error_count = 1, latency_ms = 15.0
+INSERT INTO ServiceMetrics SET ts = 1771581900000, service_id = 'notification-service', server_id = 'srv-3', request_count = 3100, error_count = 0, latency_ms = 14.5

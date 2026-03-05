@@ -20,20 +20,23 @@ query() {
     | jq '.result'
 }
 
+# Epoch ms constants for 2026-02-20
+# 10:00 = 1771581600000, 12:00 = 1771588800000
+
 # ─────────────────────────────────────────────────────────────────────────────
 echo "=== Query 1: Hourly Temperature Bucketing ==="
 echo "Aggregate sensor s-A readings into 1-hour buckets."
 echo ""
 query "sql" "
 SELECT
-  time_bucket('1h', ts) AS hour,
+  ts.timeBucket('1h', ts) AS hour,
   sensor_id,
   avg(temperature) AS avg_temp,
   max(temperature) AS max_temp,
-  percentile(temperature, 0.99) AS p99_temp,
+  ts.percentile(temperature, 0.99) AS p99_temp,
   count(*) AS samples
 FROM SensorReading
-WHERE ts BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T12:00:00Z'
+WHERE ts BETWEEN 1771581600000 AND 1771588800000
   AND sensor_id = 's-A'
 GROUP BY hour, sensor_id
 ORDER BY hour
@@ -42,16 +45,16 @@ ORDER BY hour
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
 echo "=== Query 2: Service Request Rate & Latency ==="
-echo "5-minute windowed rate and p99 latency per service."
+echo "10-minute windowed rate and p99 latency per service."
 echo ""
 query "sql" "
 SELECT
-  time_bucket('5m', ts) AS window,
+  ts.timeBucket('10m', ts) AS window,
   service_id,
-  rate(request_count) AS requests_per_sec,
-  percentile(latency_ms, 0.99) AS p99_latency
+  ts.rate(request_count, ts) AS requests_per_sec,
+  ts.percentile(latency_ms, 0.99) AS p99_latency
 FROM ServiceMetrics
-WHERE ts BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T12:00:00Z'
+WHERE ts BETWEEN 1771581600000 AND 1771588800000
 GROUP BY window, service_id
 "
 
@@ -62,48 +65,68 @@ echo "Fill missing temperature readings for sensor s-C using linear interpolatio
 echo ""
 query "sql" "
 SELECT
-  time_bucket('1m', ts) AS minute,
-  interpolate(temperature, 'linear', ts) AS temp_filled
+  ts.timeBucket('1m', ts) AS minute,
+  ts.interpolate(temperature, 'linear', ts) AS temp_filled
 FROM SensorReading
 WHERE sensor_id = 's-C'
-  AND ts BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T11:30:00Z'
+  AND ts BETWEEN 1771581600000 AND 1771587000000
 GROUP BY minute
 "
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
 echo "=== Query 4: Graph + Time-Series Correlation ==="
-echo "Traverse HQ building topology, join sensors to their readings."
+echo "Step 1: Traverse HQ building topology to find sensors."
+echo ""
+query "sql" "
+SELECT sensor.sensor_id AS sensor_id, sensor.name AS sensor_name
+FROM (
+  MATCH {type: Building, where: (name = 'HQ')}
+        .out('HAS_FLOOR'){as: floor}
+        .in('INSTALLED_IN'){as: sensor}
+  RETURN sensor
+)
+"
+
+echo ""
+echo "Step 2: Aggregate time-series data for HQ sensors."
 echo ""
 query "sql" "
 SELECT
-  sensor.name,
-  avg(ts.temperature) AS avg_temp,
-  max(ts.temperature) AS max_temp,
+  sensor_id,
+  avg(temperature) AS avg_temp,
+  max(temperature) AS max_temp,
   count(*) AS samples
-FROM (
-  TRAVERSE out('HAS_FLOOR').out('INSTALLED_IN')
-  FROM (SELECT FROM Building WHERE name = 'HQ')
-  WHILE \$depth <= 2
-) AS sensor
-WHERE sensor.@type = 'Sensor'
-  AND ts.ts BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T12:00:00Z'
-TIMESERIES sensor -> SensorReading AS ts
-GROUP BY sensor.name
+FROM SensorReading
+WHERE sensor_id IN ['s-A', 's-B', 's-C']
+  AND ts BETWEEN 1771581600000 AND 1771588800000
+GROUP BY sensor_id
 "
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Query 5: Service Impact Analysis (Cypher) ==="
-echo "Find services affected by srv-1 failure with live metrics."
+echo "=== Query 5: Service Impact Analysis ==="
+echo "Step 1: Find services affected by srv-1 failure (Cypher graph traversal)."
 echo ""
 query "cypher" "
 MATCH (failing:Server {server_id: 'srv-1'})
-  <-[:RUNS_ON]-(svc:Service)
-RETURN svc.name,
-  ts.rate(svc, 'ServiceMetrics', 'request_count',
-    datetime('2026-02-20T09:50:00Z'), datetime('2026-02-20T10:10:00Z')) AS current_rps,
-  ts.last(svc, 'ServiceMetrics', 'error_count') AS errors
+  <-[:RUNS_ON]-(directSvc:Service)
+  -[:DEPENDS_ON*0..3]->(depSvc:Service)
+RETURN DISTINCT depSvc.name AS service_name, depSvc.service_id AS service_id
+"
+
+echo ""
+echo "Step 2: Get latest metrics for affected services."
+echo ""
+query "sql" "
+SELECT
+  service_id,
+  ts.rate(request_count, ts) AS requests_per_sec,
+  sum(error_count) AS total_errors,
+  ts.percentile(latency_ms, 0.99) AS p99_latency
+FROM ServiceMetrics
+WHERE ts BETWEEN 1771581600000 AND 1771588800000
+GROUP BY service_id
 "
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -114,6 +137,6 @@ echo ""
 query "sql" "
 SELECT *
 FROM hourly_sensor_temps
-WHERE hour BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T12:00:00Z'
+WHERE hour BETWEEN 1771581600000 AND 1771588800000
 ORDER BY hour, sensor_id
 "

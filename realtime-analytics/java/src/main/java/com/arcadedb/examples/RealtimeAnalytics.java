@@ -12,6 +12,11 @@ public class RealtimeAnalytics {
   private static final String USER     = System.getenv().getOrDefault("ARCADEDB_USER", "root");
   private static final String PASSWORD = System.getenv().getOrDefault("ARCADEDB_PASS", "arcadedb");
 
+  // Epoch ms for 2026-02-20: 10:00 = 1771581600000, 12:00 = 1771588800000, 11:30 = 1771587000000
+  private static final long TS_10_00 = 1771581600000L;
+  private static final long TS_11_30 = 1771587000000L;
+  private static final long TS_12_00 = 1771588800000L;
+
   public static void main(String[] args) {
     try (RemoteDatabase db = new RemoteDatabase(HOST, PORT, DB_NAME, USER, PASSWORD)) {
       tryRun(() -> runQuery1HourlyBucketing(db), "Query 1");
@@ -39,17 +44,17 @@ public class RealtimeAnalytics {
 
     String sql = """
         SELECT
-          time_bucket('1h', ts) AS hour,
+          ts.timeBucket('1h', ts) AS hour,
           sensor_id,
           avg(temperature) AS avg_temp,
           max(temperature) AS max_temp,
-          percentile(temperature, 0.99) AS p99_temp,
+          ts.percentile(temperature, 0.99) AS p99_temp,
           count(*) AS samples
         FROM SensorReading
-        WHERE ts BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T12:00:00Z'
+        WHERE ts BETWEEN %d AND %d
           AND sensor_id = 's-A'
         GROUP BY hour, sensor_id
-        ORDER BY hour""";
+        ORDER BY hour""".formatted(TS_10_00, TS_12_00);
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
@@ -68,17 +73,17 @@ public class RealtimeAnalytics {
   // Query 2: Service Request Rate & Latency
   private static void runQuery2ServiceRate(RemoteDatabase db) {
     printHeader("Query 2: Service Request Rate & Latency",
-        "5-minute windowed rate and p99 latency per service.");
+        "10-minute windowed rate and p99 latency per service.");
 
     String sql = """
         SELECT
-          time_bucket('5m', ts) AS window,
+          ts.timeBucket('10m', ts) AS window,
           service_id,
-          rate(request_count) AS requests_per_sec,
-          percentile(latency_ms, 0.99) AS p99_latency
+          ts.rate(request_count, ts) AS requests_per_sec,
+          ts.percentile(latency_ms, 0.99) AS p99_latency
         FROM ServiceMetrics
-        WHERE ts BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T12:00:00Z'
-        GROUP BY window, service_id""";
+        WHERE ts BETWEEN %d AND %d
+        GROUP BY window, service_id""".formatted(TS_10_00, TS_12_00);
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
@@ -99,12 +104,12 @@ public class RealtimeAnalytics {
 
     String sql = """
         SELECT
-          time_bucket('1m', ts) AS minute,
-          interpolate(temperature, 'linear', ts) AS temp_filled
+          ts.timeBucket('1m', ts) AS minute,
+          ts.interpolate(temperature, 'linear', ts) AS temp_filled
         FROM SensorReading
         WHERE sensor_id = 's-C'
-          AND ts BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T11:30:00Z'
-        GROUP BY minute""";
+          AND ts BETWEEN %d AND %d
+        GROUP BY minute""".formatted(TS_10_00, TS_11_30);
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
@@ -119,29 +124,46 @@ public class RealtimeAnalytics {
   // Query 4: Graph + Time-Series Correlation
   private static void runQuery4GraphTimeSeries(RemoteDatabase db) {
     printHeader("Query 4: Graph + Time-Series Correlation",
-        "Traverse HQ building topology, join sensors to their readings.");
+        "Traverse HQ building topology, then aggregate sensor readings.");
 
-    String sql = """
-        SELECT
-          sensor.name,
-          avg(ts.temperature) AS avg_temp,
-          max(ts.temperature) AS max_temp,
-          count(*) AS samples
+    // Step 1: Graph traversal to find HQ sensors
+    System.out.println("  --- Step 1: Sensors at HQ (MATCH graph traversal) ---");
+    String matchSql = """
+        SELECT sensor.sensor_id AS sensor_id, sensor.name AS sensor_name
         FROM (
-          TRAVERSE out('HAS_FLOOR').out('INSTALLED_IN')
-          FROM (SELECT FROM Building WHERE name = 'HQ')
-          WHILE $depth <= 2
-        ) AS sensor
-        WHERE sensor.@type = 'Sensor'
-          AND ts.ts BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T12:00:00Z'
-        TIMESERIES sensor -> SensorReading AS ts
-        GROUP BY sensor.name""";
+          MATCH {type: Building, where: (name = 'HQ')}
+                .out('HAS_FLOOR'){as: floor}
+                .in('INSTALLED_IN'){as: sensor}
+          RETURN sensor
+        )""";
 
-    try (ResultSet rs = db.query("sql", sql)) {
+    try (ResultSet rs = db.query("sql", matchSql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-20s | avg: %.1f | max: %.1f | samples: %s%n",
-            r.getProperty("sensor.name"),
+        System.out.printf("  %-10s | %s%n",
+            r.getProperty("sensor_id"),
+            r.getProperty("sensor_name"));
+      }
+    }
+
+    // Step 2: Time-series aggregation for HQ sensors
+    System.out.println("  --- Step 2: Time-series aggregation ---");
+    String tsSql = """
+        SELECT
+          sensor_id,
+          avg(temperature) AS avg_temp,
+          max(temperature) AS max_temp,
+          count(*) AS samples
+        FROM SensorReading
+        WHERE sensor_id IN ['s-A', 's-B', 's-C']
+          AND ts BETWEEN %d AND %d
+        GROUP BY sensor_id""".formatted(TS_10_00, TS_12_00);
+
+    try (ResultSet rs = db.query("sql", tsSql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-10s | avg: %.1f | max: %.1f | samples: %s%n",
+            r.getProperty("sensor_id"),
             ((Number) r.getProperty("avg_temp")).doubleValue(),
             ((Number) r.getProperty("max_temp")).doubleValue(),
             r.getProperty("samples"));
@@ -149,26 +171,48 @@ public class RealtimeAnalytics {
     }
   }
 
-  // Query 5: Service Impact Analysis (Cypher)
+  // Query 5: Service Impact Analysis
   private static void runQuery5ImpactAnalysis(RemoteDatabase db) {
-    printHeader("Query 5: Service Impact Analysis (Cypher)",
+    printHeader("Query 5: Service Impact Analysis",
         "Find services affected by srv-1 failure with live metrics.");
 
+    // Step 1: Cypher graph traversal for impact chain
+    System.out.println("  --- Step 1: Affected services (Cypher dependency traversal) ---");
     String cypher = """
         MATCH (failing:Server {server_id: 'srv-1'})
-          <-[:RUNS_ON]-(svc:Service)
-        RETURN svc.name,
-          ts.rate(svc, 'ServiceMetrics', 'request_count',
-            datetime('2026-02-20T09:50:00Z'), datetime('2026-02-20T10:10:00Z')) AS current_rps,
-          ts.last(svc, 'ServiceMetrics', 'error_count') AS errors""";
+          <-[:RUNS_ON]-(directSvc:Service)
+          -[:DEPENDS_ON*0..3]->(depSvc:Service)
+        RETURN DISTINCT depSvc.name AS service_name, depSvc.service_id AS service_id""";
 
     try (ResultSet rs = db.query("cypher", cypher)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-25s | rps: %s | errors: %s%n",
-            r.getProperty("svc.name"),
-            r.getProperty("current_rps"),
-            r.getProperty("errors"));
+        System.out.printf("  %-25s | %s%n",
+            r.getProperty("service_name"),
+            r.getProperty("service_id"));
+      }
+    }
+
+    // Step 2: Time-series metrics for affected services
+    System.out.println("  --- Step 2: Service metrics ---");
+    String metricsSql = """
+        SELECT
+          service_id,
+          ts.rate(request_count, ts) AS requests_per_sec,
+          sum(error_count) AS total_errors,
+          ts.percentile(latency_ms, 0.99) AS p99_latency
+        FROM ServiceMetrics
+        WHERE ts BETWEEN %d AND %d
+        GROUP BY service_id""".formatted(TS_10_00, TS_12_00);
+
+    try (ResultSet rs = db.query("sql", metricsSql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-25s | rps: %s | errors: %s | p99: %s ms%n",
+            r.getProperty("service_id"),
+            r.getProperty("requests_per_sec"),
+            r.getProperty("total_errors"),
+            r.getProperty("p99_latency"));
       }
     }
   }
@@ -179,12 +223,12 @@ public class RealtimeAnalytics {
         "Query pre-computed hourly temperature rollup.");
 
     String sql = """
-        SELECT *
+        SELECT hour, sensor_id, avg_temp, max_temp, min_temp
         FROM hourly_sensor_temps
-        WHERE hour BETWEEN '2026-02-20T10:00:00Z' AND '2026-02-20T12:00:00Z'
-        ORDER BY hour, sensor_id""";
+        WHERE hour BETWEEN %d AND %d
+        ORDER BY hour, sensor_id""".formatted(TS_10_00, TS_12_00);
 
-    try (ResultSet rs = db.query("sql", sql)) {
+    try (ResultSet rs = db.command("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
         System.out.printf("  %s | %-5s | avg: %s | max: %s | min: %s%n",
