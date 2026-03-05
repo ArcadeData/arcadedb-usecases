@@ -1,0 +1,14 @@
+apiVersion: 1
+datasources:
+  - name: ArcadeDB
+    type: prometheus
+    access: proxy
+    url: http://arcadedb:2480/api/v1/ts/RealtimeAnalytics/prom
+    basicAuth: true
+    basicAuthUser: root
+    secureJsonData:
+      basicAuthPassword: arcadedb
+    jsonData:
+      httpMethod: GET
+    isDefault: true
+    editable: false

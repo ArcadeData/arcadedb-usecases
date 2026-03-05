@@ -16,7 +16,7 @@ for unified operational analytics.
 
 ## Quickstart
 
-### 1. Start ArcadeDB
+### 1. Start ArcadeDB and Grafana
 
 ```bash
 docker compose up -d
@@ -44,6 +44,18 @@ cd java
 mvn package -q
 java -jar target/realtime-analytics.jar
 ```
+
+### 3c. View Grafana dashboard
+
+Open [http://localhost:3000](http://localhost:3000) — no login required.
+
+The preconfigured dashboard shows 4 panels querying ArcadeDB via PromQL:
+- **Temperature by Sensor** — all sensors over time
+- **Avg Temperature by Location** — HQ vs Data Center
+- **Request Count by Service** — raw counts per service
+- **Request Rate by Service** — `rate()` derived throughput
+
+The time range is preset to the sample data window (2026-02-20 10:00–12:00 UTC).
 
 ## Schema
 
@@ -84,8 +96,8 @@ java -jar target/realtime-analytics.jar
 - 2 buildings (HQ, Data Center) with 4 floors
 - 6 sensors across both buildings
 - 3 servers and 5 services with dependency chain
-- ~20 sensor readings over a 2-hour window (sensor s-C has a deliberate gap)
-- ~15 service metrics with varying load and error rates
+- ~69 sensor readings at 10-minute intervals over a 2-hour window (sensor s-C has a deliberate gap)
+- ~96 service metrics at 5-minute intervals with varying load and error rates
 
 ## ArcadeDB Version Notes
 
