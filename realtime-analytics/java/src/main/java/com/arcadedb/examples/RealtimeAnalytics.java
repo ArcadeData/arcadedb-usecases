@@ -4,6 +4,10 @@ import com.arcadedb.query.sql.executor.Result;
 import com.arcadedb.query.sql.executor.ResultSet;
 import com.arcadedb.remote.RemoteDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class RealtimeAnalytics {
 
   private static final String HOST     = System.getenv().getOrDefault("ARCADEDB_HOST", "localhost");
@@ -137,17 +141,21 @@ public class RealtimeAnalytics {
           RETURN sensor
         )""";
 
+    List<String> sensorIds = new ArrayList<>();
     try (ResultSet rs = db.query("sql", matchSql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-10s | %s%n",
-            r.getProperty("sensor_id"),
-            r.getProperty("sensor_name"));
+        String sensorId = r.getProperty("sensor_id");
+        sensorIds.add(sensorId);
+        System.out.printf("  %-10s | %s%n", sensorId, r.getProperty("sensor_name"));
       }
     }
 
-    // Step 2: Time-series aggregation for HQ sensors
+    // Step 2: Time-series aggregation for HQ sensors (using IDs from step 1)
     System.out.println("  --- Step 2: Time-series aggregation ---");
+    String sensorInList = sensorIds.stream()
+        .map(id -> "'" + id + "'")
+        .collect(Collectors.joining(", "));
     String tsSql = """
         SELECT
           sensor_id,
@@ -155,9 +163,9 @@ public class RealtimeAnalytics {
           max(temperature) AS max_temp,
           count(*) AS samples
         FROM SensorReading
-        WHERE sensor_id IN ['s-A', 's-B', 's-C']
+        WHERE sensor_id IN [%s]
           AND ts BETWEEN %d AND %d
-        GROUP BY sensor_id""".formatted(TS_10_00, TS_12_00);
+        GROUP BY sensor_id""".formatted(sensorInList, TS_10_00, TS_12_00);
 
     try (ResultSet rs = db.query("sql", tsSql)) {
       while (rs.hasNext()) {
@@ -184,17 +192,21 @@ public class RealtimeAnalytics {
           -[:DEPENDS_ON*0..3]->(depSvc:Service)
         RETURN DISTINCT depSvc.name AS service_name, depSvc.service_id AS service_id""";
 
+    List<String> serviceIds = new ArrayList<>();
     try (ResultSet rs = db.query("cypher", cypher)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-25s | %s%n",
-            r.getProperty("service_name"),
-            r.getProperty("service_id"));
+        String serviceId = r.getProperty("service_id");
+        serviceIds.add(serviceId);
+        System.out.printf("  %-25s | %s%n", r.getProperty("service_name"), serviceId);
       }
     }
 
-    // Step 2: Time-series metrics for affected services
+    // Step 2: Time-series metrics for affected services (using IDs from step 1)
     System.out.println("  --- Step 2: Service metrics ---");
+    String serviceInList = serviceIds.stream()
+        .map(id -> "'" + id + "'")
+        .collect(Collectors.joining(", "));
     String metricsSql = """
         SELECT
           service_id,
@@ -202,8 +214,9 @@ public class RealtimeAnalytics {
           sum(error_count) AS total_errors,
           ts.percentile(latency_ms, 0.99) AS p99_latency
         FROM ServiceMetrics
-        WHERE ts BETWEEN %d AND %d
-        GROUP BY service_id""".formatted(TS_10_00, TS_12_00);
+        WHERE service_id IN [%s]
+          AND ts BETWEEN %d AND %d
+        GROUP BY service_id""".formatted(serviceInList, TS_10_00, TS_12_00);
 
     try (ResultSet rs = db.query("sql", metricsSql)) {
       while (rs.hasNext()) {

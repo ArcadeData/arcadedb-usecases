@@ -90,6 +90,8 @@ FROM (
 
 echo ""
 echo "Step 2: Aggregate time-series data for HQ sensors."
+echo "Note: In a shell script, sensor IDs are hardcoded. The Java version dynamically"
+echo "passes IDs from step 1 since cross-model IN subqueries are not supported."
 echo ""
 query "sql" "
 SELECT
@@ -117,6 +119,8 @@ RETURN DISTINCT depSvc.name AS service_name, depSvc.service_id AS service_id
 
 echo ""
 echo "Step 2: Get latest metrics for affected services."
+echo "Note: In a shell script, service IDs are hardcoded. The Java version dynamically"
+echo "passes IDs from step 1 since cross-model IN subqueries are not supported."
 echo ""
 query "sql" "
 SELECT
@@ -125,7 +129,8 @@ SELECT
   sum(error_count) AS total_errors,
   ts.percentile(latency_ms, 0.99) AS p99_latency
 FROM ServiceMetrics
-WHERE ts BETWEEN 1771581600000 AND 1771588800000
+WHERE service_id IN ['api-gateway', 'auth-service', 'user-service', 'payment-service', 'notification-service']
+  AND ts BETWEEN 1771581600000 AND 1771588800000
 GROUP BY service_id
 "
 

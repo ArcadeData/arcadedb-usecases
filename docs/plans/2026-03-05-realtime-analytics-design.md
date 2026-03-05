@@ -43,13 +43,13 @@ realtime-analytics/
 ### Time-Series Types
 
 **SensorReading**
-- TIMESTAMP `ts` PRECISION NANOSECOND
-- TAGS: `sensor_id` STRING, `location` STRING, `floor` STRING
+- TIMESTAMP `ts` (epoch milliseconds)
+- TAGS: `sensor_id` STRING, `location` STRING
 - FIELDS: `temperature` DOUBLE, `humidity` DOUBLE, `pressure` DOUBLE
-- SHARDS 16, RETENTION 90 DAYS, COMPACTION INTERVAL 30s
+- SHARDS 16, RETENTION 90 DAYS
 
 **ServiceMetrics**
-- TIMESTAMP `ts` PRECISION NANOSECOND
+- TIMESTAMP `ts` (epoch milliseconds)
 - TAGS: `service_id` STRING, `server_id` STRING
 - FIELDS: `request_count` LONG, `error_count` LONG, `latency_ms` DOUBLE
 - SHARDS 8, RETENTION 30 DAYS
@@ -73,7 +73,7 @@ realtime-analytics/
 | `RUNS_ON` | Service → Server |
 | `DEPENDS_ON` | Service → Service |
 
-The graph and time-series worlds connect via shared IDs (`sensor_id`, `service_id`) rather than direct edges, matching the `TIMESERIES sensor -> SensorReading AS ts` join pattern.
+The graph and time-series worlds connect via shared IDs (`sensor_id`, `service_id`) rather than direct edges. Queries use a two-step pattern: graph traversal first, then time-series SQL filtered by the collected IDs.
 
 ## Sample Data (`sql/02-data.sql`)
 
@@ -250,3 +250,17 @@ Each matrix entry:
 - SQL files (schema, data, aggregates) apply cleanly via `curl` with no errors
 - `queries.sh` runs all 6 queries and returns non-empty result sets
 - `mvn package && java -jar ...` runs all 6 queries and prints results to stdout
+
+## Implementation Notes (ArcadeDB 26.3.1 Discoveries)
+
+The following changes were made during implementation based on actual 26.3.1 behavior:
+
+- **`PRECISION` / `COMPACTION INTERVAL`** — not supported in `CREATE TIMESERIES TYPE`; removed from DDL
+- **Timestamps** — must be epoch **milliseconds** (LONG), not nanoseconds or ISO strings
+- **Function prefix** — all time-series functions require `ts.` prefix: `ts.timeBucket()`, `ts.percentile()`, `ts.rate()`, `ts.interpolate()`
+- **`ts.rate()`** — requires 2 arguments `ts.rate(field, ts)` and needs ≥2 data points per bucket; Query 2 uses 10m windows (not 5m)
+- **Interval shortcodes** — `s`, `m`, `h`, `d`, `w` (not `1 hour` etc.)
+- **`floor` tag** — removed from `SensorReading` schema (declared but never populated)
+- **Cross-model queries** — `TIMESERIES sensor -> SensorReading AS ts` join syntax and `ts.rate()` in Cypher are not supported in 26.3.1; Queries 4 and 5 use a two-step pattern: graph traversal first, then time-series SQL filtered by the collected IDs
+- **Continuous aggregates** — must use `db.command()` (not `db.query()`) in Java client; `SELECT *` fails with "Unknown record type", use explicit column projection
+- **`TRAVERSE` direction** — `INSTALLED_IN` edges go Sensor→Floor, so traversal from Building uses `in('INSTALLED_IN')` (not `out()`); Query 4 step 1 uses MATCH pattern instead

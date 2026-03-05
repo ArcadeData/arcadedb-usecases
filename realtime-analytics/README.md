@@ -6,7 +6,7 @@ for unified operational analytics.
 
 - **Time-series analytics** — time bucketing, rate of change, percentiles, interpolation
 - **Graph traversal** — building topology and service dependency analysis
-- **Multi-model correlation** — graph + time-series joins in a single query
+- **Multi-model correlation** — graph traversal + time-series aggregation in two-step patterns
 
 ## Prerequisites
 
@@ -51,7 +51,7 @@ java -jar target/realtime-analytics.jar
 
 | Type | Tags | Fields |
 |------|------|--------|
-| `SensorReading` | `sensor_id`, `location`, `floor` | `temperature`, `humidity`, `pressure` |
+| `SensorReading` | `sensor_id`, `location` | `temperature`, `humidity`, `pressure` |
 | `ServiceMetrics` | `service_id`, `server_id` | `request_count`, `error_count`, `latency_ms` |
 
 ### Graph Types
@@ -90,8 +90,9 @@ java -jar target/realtime-analytics.jar
 ## ArcadeDB Version Notes
 
 This use case targets ArcadeDB **26.3.1**. Time-series queries use native
-`time_bucket()`, `rate()`, `percentile()`, and `interpolate()` functions.
-Graph and time-series data are correlated via the `TIMESERIES ... AS` join syntax.
+`ts.timeBucket()`, `ts.rate()`, `ts.percentile()`, and `ts.interpolate()` functions.
+Graph and time-series data are correlated using a two-step query pattern: a graph
+traversal to identify entities, followed by a time-series query filtered to those entities.
 
 ## Reference
 
