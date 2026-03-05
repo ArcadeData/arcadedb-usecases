@@ -96,8 +96,8 @@ The time range is preset to the sample data window (2026-02-20 10:00–12:00 UTC
 - 2 buildings (HQ, Data Center) with 4 floors
 - 6 sensors across both buildings
 - 3 servers and 5 services with dependency chain
-- ~20 sensor readings over a 2-hour window (sensor s-C has a deliberate gap)
-- ~15 service metrics with varying load and error rates
+- ~69 sensor readings at 10-minute intervals over a 2-hour window (sensor s-C has a deliberate gap)
+- ~96 service metrics at 5-minute intervals with varying load and error rates
 
 ## ArcadeDB Version Notes
 
