@@ -71,7 +71,8 @@ grafana:
     GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/realtime-analytics.json
   volumes:
     - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-    - ./grafana/dashboards:/var/lib/grafana/dashboards
+    - ./grafana/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+    - ./grafana/dashboards/realtime-analytics.json:/var/lib/grafana/dashboards/realtime-analytics.json
   depends_on:
     arcadedb:
       condition: service_healthy
@@ -97,6 +98,8 @@ datasources:
     basicAuthUser: root
     secureJsonData:
       basicAuthPassword: arcadedb
+    jsonData:
+      httpMethod: GET
     isDefault: true
     editable: false
 ```
@@ -106,6 +109,7 @@ Key details:
 - URL points to ArcadeDB's PromQL endpoint base path for the `RealtimeAnalytics` database
 - Basic auth with root/arcadedb credentials
 - `access: proxy` — Grafana server-side proxies requests (avoids CORS)
+- `httpMethod: GET` — required because ArcadeDB's PromQL handlers only support GET (Grafana defaults to POST)
 
 ## Dashboard Panels
 
