@@ -86,6 +86,20 @@ updates:
         patterns:
           - "org.apache.maven.plugins:*"
 
+  - package-ecosystem: "maven"
+    directory: "/realtime-analytics/java"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      arcadedb:
+        patterns:
+          - "com.arcadedb:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
   # ── Docker Compose ──────────────────────────────────────────────────────────
   - package-ecosystem: "docker-compose"
     directory: "/recommendation-engine"
@@ -122,6 +136,17 @@ updates:
 
   - package-ecosystem: "docker-compose"
     directory: "/fraud-detection"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      arcadedb-docker:
+        patterns:
+          - "arcadedata/arcadedb"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/realtime-analytics"
     schedule:
       interval: weekly
       day: "sunday"
