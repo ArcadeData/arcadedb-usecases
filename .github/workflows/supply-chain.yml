@@ -1,0 +1,89 @@
+name: Supply Chain CI
+
+on:
+  push:
+    paths:
+      - supply-chain/**
+      - .github/workflows/supply-chain.yml
+  pull_request:
+    paths:
+      - supply-chain/**
+      - .github/workflows/supply-chain.yml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [curl, java, js]
+
+    env:
+      ARCADEDB_URL: http://localhost:2480
+      ARCADEDB_USER: root
+      ARCADEDB_PASS: arcadedb
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Java
+        if: matrix.runner == 'java'
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven repository
+        if: matrix.runner == 'java'
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-supply-chain-${{ hashFiles('supply-chain/java/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-supply-chain-
+
+      - name: Set up Node.js
+        if: matrix.runner == 'js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install JS dependencies
+        if: matrix.runner == 'js'
+        working-directory: supply-chain/js
+        run: npm install
+
+      - name: Start ArcadeDB
+        working-directory: supply-chain
+        run: docker compose up -d
+
+      - name: Setup database
+        working-directory: supply-chain
+        run: ./setup.sh
+
+      - name: Run curl queries
+        if: matrix.runner == 'curl'
+        working-directory: supply-chain
+        run: ./queries/queries.sh
+
+      - name: Build and run Java
+        if: matrix.runner == 'java'
+        working-directory: supply-chain/java
+        run: |
+          mvn package --no-transfer-progress
+          java -jar target/supply-chain.jar
+
+      - name: Run JavaScript queries
+        if: matrix.runner == 'js'
+        working-directory: supply-chain/js
+        run: node supply-chain.js
+
+      - name: Teardown
+        if: always()
+        working-directory: supply-chain
+        run: docker compose down
