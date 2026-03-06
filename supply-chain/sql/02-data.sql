@@ -46,13 +46,13 @@ CREATE EDGE SUPPLIES FROM (SELECT FROM Supplier WHERE name = 'Tokyo Electronics'
 CREATE EDGE ALTERNATIVE_FOR FROM (SELECT FROM Supplier WHERE name = 'Tokyo Electronics') TO (SELECT FROM Component WHERE name = 'Microcontroller');
 CREATE EDGE ALTERNATIVE_FOR FROM (SELECT FROM Supplier WHERE name = 'Seoul Chip Inc') TO (SELECT FROM Component WHERE name = 'Circuit Board');
 -- CONTAINS edges (bill of materials)
-CREATE EDGE CONTAINS FROM (SELECT FROM Component WHERE name = 'Microcontroller') TO (SELECT FROM Product WHERE sku = 'WIDGET-PRO-X');
-CREATE EDGE CONTAINS FROM (SELECT FROM Component WHERE name = 'Sensor Module') TO (SELECT FROM Product WHERE sku = 'WIDGET-PRO-X');
-CREATE EDGE CONTAINS FROM (SELECT FROM Component WHERE name = 'Circuit Board') TO (SELECT FROM Product WHERE sku = 'WIDGET-PRO-X');
-CREATE EDGE CONTAINS FROM (SELECT FROM Component WHERE name = 'Display Panel') TO (SELECT FROM Product WHERE sku = 'WIDGET-LITE');
-CREATE EDGE CONTAINS FROM (SELECT FROM Component WHERE name = 'Battery Pack') TO (SELECT FROM Product WHERE sku = 'WIDGET-LITE');
-CREATE EDGE CONTAINS FROM (SELECT FROM Component WHERE name = 'Sensor Module') TO (SELECT FROM Product WHERE sku = 'SENSOR-HUB-1');
-CREATE EDGE CONTAINS FROM (SELECT FROM Component WHERE name = 'Microcontroller') TO (SELECT FROM Product WHERE sku = 'SENSOR-HUB-1');
+CREATE EDGE `CONTAINS` FROM (SELECT FROM Component WHERE name = 'Microcontroller') TO (SELECT FROM Product WHERE sku = 'WIDGET-PRO-X');
+CREATE EDGE `CONTAINS` FROM (SELECT FROM Component WHERE name = 'Sensor Module') TO (SELECT FROM Product WHERE sku = 'WIDGET-PRO-X');
+CREATE EDGE `CONTAINS` FROM (SELECT FROM Component WHERE name = 'Circuit Board') TO (SELECT FROM Product WHERE sku = 'WIDGET-PRO-X');
+CREATE EDGE `CONTAINS` FROM (SELECT FROM Component WHERE name = 'Display Panel') TO (SELECT FROM Product WHERE sku = 'WIDGET-LITE');
+CREATE EDGE `CONTAINS` FROM (SELECT FROM Component WHERE name = 'Battery Pack') TO (SELECT FROM Product WHERE sku = 'WIDGET-LITE');
+CREATE EDGE `CONTAINS` FROM (SELECT FROM Component WHERE name = 'Sensor Module') TO (SELECT FROM Product WHERE sku = 'SENSOR-HUB-1');
+CREATE EDGE `CONTAINS` FROM (SELECT FROM Component WHERE name = 'Microcontroller') TO (SELECT FROM Product WHERE sku = 'SENSOR-HUB-1');
 -- ASSEMBLED_FROM edges (traceability: RawMaterial -> Component -> Product)
 CREATE EDGE ASSEMBLED_FROM FROM (SELECT FROM RawMaterial WHERE name = 'Silicon Wafer') TO (SELECT FROM Component WHERE name = 'Microcontroller');
 CREATE EDGE ASSEMBLED_FROM FROM (SELECT FROM RawMaterial WHERE name = 'Copper Wire') TO (SELECT FROM Component WHERE name = 'Circuit Board');

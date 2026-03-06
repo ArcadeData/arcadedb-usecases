@@ -25,11 +25,18 @@ echo "Database ready."
 # ── Helper: send one SQL statement ───────────────────────────────────────────
 send_sql() {
   local stmt="$1"
-  jq -cn --arg cmd "$stmt" '{"language":"sql","command":$cmd}' \
-    | curl -sf -u "${ARCADEDB_USER}:${ARCADEDB_PASS}" \
-        -X POST "${ARCADEDB_URL}/api/v1/command/${DB_NAME}" \
-        -H "Content-Type: application/json" \
-        -d @- > /dev/null
+  local body
+  body=$(jq -cn --arg cmd "$stmt" '{"language":"sql","command":$cmd}')
+  local http_code
+  http_code=$(curl -s -o /dev/null -w '%{http_code}' \
+    -u "${ARCADEDB_USER}:${ARCADEDB_PASS}" \
+    -X POST "${ARCADEDB_URL}/api/v1/command/${DB_NAME}" \
+    -H "Content-Type: application/json" \
+    -d "$body")
+  if [[ "$http_code" -ge 400 ]]; then
+    echo "  FAILED (HTTP $http_code): $stmt" >&2
+    return 1
+  fi
 }
 
 # ── Apply a SQL file (one statement per line) ─────────────────────────────────
