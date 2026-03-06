@@ -1,0 +1,97 @@
+name: IAM CI
+
+on:
+  push:
+    paths:
+      - iam/**
+      - .github/workflows/iam.yml
+  pull_request:
+    paths:
+      - iam/**
+      - .github/workflows/iam.yml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [curl, java, python]
+
+    env:
+      ARCADEDB_URL: http://localhost:2480
+      ARCADEDB_USER: root
+      ARCADEDB_PASS: arcadedb
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Java
+        if: matrix.runner == 'java'
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven repository
+        if: matrix.runner == 'java'
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-iam-${{ hashFiles('iam/java/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-iam-
+
+      - name: Set up Python
+        if: matrix.runner == 'python'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip
+        if: matrix.runner == 'python'
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-iam-${{ hashFiles('iam/python/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-iam-
+
+      - name: Install Python dependencies
+        if: matrix.runner == 'python'
+        working-directory: iam/python
+        run: pip install -r requirements.txt
+
+      - name: Start ArcadeDB
+        working-directory: iam
+        run: docker compose up -d
+
+      - name: Setup database
+        working-directory: iam
+        run: ./setup.sh
+
+      - name: Run curl queries
+        if: matrix.runner == 'curl'
+        working-directory: iam
+        run: ./queries/queries.sh
+
+      - name: Build and run Java
+        if: matrix.runner == 'java'
+        working-directory: iam/java
+        run: |
+          mvn package --no-transfer-progress
+          java -jar target/iam.jar
+
+      - name: Run Python queries
+        if: matrix.runner == 'python'
+        working-directory: iam/python
+        run: python iam.py
+
+      - name: Teardown
+        if: always()
+        working-directory: iam
+        run: docker compose down

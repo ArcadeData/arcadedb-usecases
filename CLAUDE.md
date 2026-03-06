@@ -15,6 +15,7 @@ A collection of self-contained projects demonstrating [ArcadeDB](https://arcaded
 | `graph-rag/` | `GraphRAG` | 26.3.1 | 21 | Bolt (`neo4j-java-driver`) + LangChain4j |
 | `fraud-detection/` | `FraudDetection` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
 | `supply-chain/` | `SupplyChain` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`pg`) |
+| `iam/` | `IAM` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`psycopg`) |
 
 ## Directory Structure (per use case)
 
