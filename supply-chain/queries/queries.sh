@@ -42,7 +42,8 @@ MATCH (s:Supplier {name: 'Shenzhen Micro Ltd'})
       -[:SUPPLIES]->(c:Component)
       -[:CONTAINS]->(p:Product)
 OPTIONAL MATCH (c)<-[:ALTERNATIVE_FOR]-(alt:Supplier)
-RETURN c.name AS component, p.name AS product, collect(alt.name) AS alternatives
+RETURN c.name AS component, p.name AS product,
+       p.revenue_annual AS revenue_at_risk, collect(alt.name) AS alternatives
 "
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -82,4 +83,33 @@ query "cypher" "
 MATCH (p:Product {batchId: 'BATCH-2026-0218'})
       <-[:ASSEMBLED_FROM*1..8]-(material)
 RETURN material.name, material.origin, material.certification, material.lot
+"
+
+# ─────────────────────────────────────────────────────────────────────────────
+echo ""
+echo "=== Query 6: Inventory Intelligence ==="
+echo "Identify products in warehouses with low stock (< 5 weeks)."
+echo ""
+query "sql" "
+SELECT warehouse, stock_weeks, product, revenue_annual
+FROM (
+  MATCH {type: Warehouse, where: (stock_weeks < 5)}{as: w}
+        .in('STORED_AT'){as: p}
+  RETURN w.name AS warehouse, w.stock_weeks AS stock_weeks,
+         p.name AS product, p.revenue_annual AS revenue_annual
+)
+ORDER BY stock_weeks ASC
+"
+
+# ─────────────────────────────────────────────────────────────────────────────
+echo ""
+echo "=== Query 7: Recall Simulation ==="
+echo "Trace downstream from raw material lot LOT-2026-001 to affected products and customers."
+echo ""
+query "cypher" "
+MATCH (rm:RawMaterial {lot: 'LOT-2026-001'})
+      -[:ASSEMBLED_FROM*1..4]->(p:Product)
+      -[:SHIPPED_TO]->(c:Customer)
+RETURN rm.name AS material, p.name AS product,
+       p.sku AS sku, c.customerId AS customer
 "

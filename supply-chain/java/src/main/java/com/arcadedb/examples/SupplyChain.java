@@ -19,6 +19,8 @@ public class SupplyChain {
       tryRun(() -> runQuery3DisruptionDetection(db), "Query 3");
       tryRun(() -> runQuery4AlternativeSourcing(db), "Query 4");
       tryRun(() -> runQuery5Traceability(db), "Query 5");
+      tryRun(() -> runQuery6InventoryIntelligence(db), "Query 6");
+      tryRun(() -> runQuery7RecallSimulation(db), "Query 7");
     }
     System.out.println("\nAll queries complete.");
   }
@@ -66,14 +68,16 @@ public class SupplyChain {
                   -[:SUPPLIES]->(c:Component)
                   -[:CONTAINS]->(p:Product)
             OPTIONAL MATCH (c)<-[:ALTERNATIVE_FOR]-(alt:Supplier)
-            RETURN c.name AS component, p.name AS product, collect(alt.name) AS alternatives""";
+            RETURN c.name AS component, p.name AS product,
+                   p.revenue_annual AS revenue_at_risk, collect(alt.name) AS alternatives""";
 
     try (ResultSet rs = db.query("cypher", cypher)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-20s | %-20s | alternatives: %s%n",
+        System.out.printf("  %-20s | %-20s | revenue: $%,.0f | alternatives: %s%n",
             r.getProperty("component"),
             r.getProperty("product"),
+            ((Number) r.getProperty("revenue_at_risk")).doubleValue(),
             r.getProperty("alternatives"));
       }
     }
@@ -149,6 +153,59 @@ public class SupplyChain {
             r.getProperty("material.origin"),
             r.getProperty("material.certification"),
             r.getProperty("material.lot"));
+      }
+    }
+  }
+
+  // Query 6: Inventory Intelligence
+  private static void runQuery6InventoryIntelligence(RemoteDatabase db) {
+    printHeader("Query 6: Inventory Intelligence",
+        "Identify products in warehouses with low stock (< 5 weeks).");
+
+    String sql =
+        """
+            SELECT warehouse, stock_weeks, product, revenue_annual
+            FROM (
+              MATCH {type: Warehouse, where: (stock_weeks < 5)}{as: w}
+                    .in('STORED_AT'){as: p}
+              RETURN w.name AS warehouse, w.stock_weeks AS stock_weeks,
+                     p.name AS product, p.revenue_annual AS revenue_annual
+            )
+            ORDER BY stock_weeks ASC""";
+
+    try (ResultSet rs = db.query("sql", sql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-15s | %2d weeks | %-20s | revenue: $%,.0f%n",
+            r.getProperty("warehouse"),
+            ((Number) r.getProperty("stock_weeks")).intValue(),
+            r.getProperty("product"),
+            ((Number) r.getProperty("revenue_annual")).doubleValue());
+      }
+    }
+  }
+
+  // Query 7: Recall Simulation
+  private static void runQuery7RecallSimulation(RemoteDatabase db) {
+    printHeader("Query 7: Recall Simulation",
+        "Trace downstream from raw material lot LOT-2026-001 to affected products and customers.");
+
+    String cypher =
+        """
+            MATCH (rm:RawMaterial {lot: 'LOT-2026-001'})
+                  -[:ASSEMBLED_FROM*1..4]->(p:Product)
+                  -[:SHIPPED_TO]->(c:Customer)
+            RETURN rm.name AS material, p.name AS product,
+                   p.sku AS sku, c.customerId AS customer""";
+
+    try (ResultSet rs = db.query("cypher", cypher)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-20s | %-20s | sku: %-15s | customer: %s%n",
+            r.getProperty("material"),
+            r.getProperty("product"),
+            r.getProperty("sku"),
+            r.getProperty("customer"));
       }
     }
   }

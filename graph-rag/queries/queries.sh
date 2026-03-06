@@ -62,13 +62,14 @@ LIMIT 10
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Query 4: Composite Scoring: Vector + Entity Count (SQL) ==="
-echo "Score chunks by vector distance and entity connections."
+echo "=== Query 4: Triple Hybrid — Vector + Graph + Full-Text (SQL) ==="
+echo "Combine vector similarity, graph context, and full-text filtering in one query."
 echo ""
 query "sql" "
 SELECT content, source,
        out('MENTIONS').size() AS entity_count
 FROM Chunk
+WHERE content CONTAINSTEXT 'knowledge graph'
 ORDER BY vectorNeighbors('Chunk[embedding]', [0.9, 0.2, 0.1, 0.1], 10) DESC
 LIMIT 10
 "
