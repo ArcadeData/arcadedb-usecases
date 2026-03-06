@@ -134,7 +134,7 @@ async function runQuery5(client) {
   const sql = `
     SELECT name, origin, certification, lot
     FROM (
-      MATCH {type: Product, where: (batch = 'BATCH-2026-0218')}
+      MATCH {type: Product, where: (batchId = 'BATCH-2026-0218')}
             .in('ASSEMBLED_FROM'){as: material, while: ($depth < 8)}
       RETURN material.name AS name, material.origin AS origin,
              material.certification AS certification, material.lot AS lot

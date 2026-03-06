@@ -48,7 +48,7 @@ Seven vertex types, seven edge types, and one document type.
 |------|-----------|-------|
 | `Supplier` | `name` (STRING), `country` (STRING), `risk_score` (FLOAT), `lead_time_avg` (INTEGER), `quality_score` (FLOAT), `certifications` (STRING), `status` (STRING), `capability_vec` (LIST) | Vector index on `capability_vec` (LSM_VECTOR, 4D, COSINE) |
 | `Component` | `name` (STRING) | Intermediate nodes in supply chain |
-| `Product` | `sku` (STRING), `name` (STRING), `revenue_annual` (FLOAT), `batch` (STRING) | Unique index on `sku` |
+| `Product` | `sku` (STRING), `name` (STRING), `revenue_annual` (FLOAT), `batchId` (STRING) | Unique index on `sku` |
 | `Warehouse` | `name` (STRING), `stock_weeks` (INTEGER) | Inventory locations |
 | `Customer` | `customerId` (STRING), `contact_email` (STRING) | End customers |
 | `ShippingRoute` | `name` (STRING), `transit_days` (INTEGER), `cost` (FLOAT) | Logistics paths |
@@ -204,7 +204,7 @@ LIMIT 5
 **Query 5 — End-to-end batch traceability (Cypher)**
 Trace all raw materials used in batch BATCH-2026-0218 through the assembly chain.
 ```cypher
-MATCH (p:Product {batch: 'BATCH-2026-0218'})
+MATCH (p:Product {batchId: 'BATCH-2026-0218'})
       <-[:ASSEMBLED_FROM*1..8]-(material)
 RETURN material.name, material.origin, material.certification, material.lot
 ```

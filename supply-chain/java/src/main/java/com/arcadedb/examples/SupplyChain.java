@@ -137,7 +137,7 @@ public class SupplyChain {
 
     String cypher =
         """
-            MATCH (p:Product {batch: 'BATCH-2026-0218'})
+            MATCH (p:Product {batchId: 'BATCH-2026-0218'})
                   <-[:ASSEMBLED_FROM*1..8]-(material)
             RETURN material.name, material.origin, material.certification, material.lot""";
 

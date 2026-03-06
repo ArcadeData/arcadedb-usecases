@@ -79,7 +79,7 @@ echo "=== Query 5: End-to-End Batch Traceability ==="
 echo "Trace all raw materials in batch BATCH-2026-0218 through the assembly chain."
 echo ""
 query "cypher" "
-MATCH (p:Product {batch: 'BATCH-2026-0218'})
+MATCH (p:Product {batchId: 'BATCH-2026-0218'})
       <-[:ASSEMBLED_FROM*1..8]-(material)
 RETURN material.name, material.origin, material.certification, material.lot
 "

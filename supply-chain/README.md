@@ -58,7 +58,7 @@ node supply-chain.js
 |------|------|----------------|
 | `Supplier` | Vertex | `name`, `country`, `risk_score`, `lead_time_avg`, `quality_score`, `certifications`, `status`, `capability_vec` |
 | `Component` | Vertex | `name` |
-| `Product` | Vertex | `sku`, `name`, `revenue_annual`, `batch` |
+| `Product` | Vertex | `sku`, `name`, `revenue_annual`, `batchId` |
 | `Warehouse` | Vertex | `name`, `stock_weeks` |
 | `Customer` | Vertex | `customerId`, `contact_email` |
 | `ShippingRoute` | Vertex | `name`, `transit_days`, `cost` |

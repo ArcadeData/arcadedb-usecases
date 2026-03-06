@@ -167,9 +167,9 @@ INSERT INTO Component SET name = 'Circuit Board';
 INSERT INTO Component SET name = 'Display Panel';
 INSERT INTO Component SET name = 'Battery Pack';
 -- Products
-INSERT INTO Product SET sku = 'WIDGET-PRO-X', name = 'Widget Pro X', revenue_annual = 2500000.00, batch = 'BATCH-2026-0218';
-INSERT INTO Product SET sku = 'WIDGET-LITE', name = 'Widget Lite', revenue_annual = 800000.00, batch = 'BATCH-2026-0301';
-INSERT INTO Product SET sku = 'SENSOR-HUB-1', name = 'Sensor Hub', revenue_annual = 1200000.00, batch = 'BATCH-2026-0115';
+INSERT INTO Product SET sku = 'WIDGET-PRO-X', name = 'Widget Pro X', revenue_annual = 2500000.00, batchId = 'BATCH-2026-0218';
+INSERT INTO Product SET sku = 'WIDGET-LITE', name = 'Widget Lite', revenue_annual = 800000.00, batchId = 'BATCH-2026-0301';
+INSERT INTO Product SET sku = 'SENSOR-HUB-1', name = 'Sensor Hub', revenue_annual = 1200000.00, batchId = 'BATCH-2026-0115';
 -- Warehouses
 INSERT INTO Warehouse SET name = 'US-East', stock_weeks = 6;
 INSERT INTO Warehouse SET name = 'EU-Central', stock_weeks = 4;
@@ -408,7 +408,7 @@ echo "=== Query 5: End-to-End Batch Traceability ==="
 echo "Trace all raw materials in batch BATCH-2026-0218 through the assembly chain."
 echo ""
 query "cypher" "
-MATCH (p:Product {batch: 'BATCH-2026-0218'})
+MATCH (p:Product {batchId: 'BATCH-2026-0218'})
       <-[:ASSEMBLED_FROM*1..8]-(material)
 RETURN material.name, material.origin, material.certification, material.lot
 "
@@ -578,7 +578,7 @@ Query 5 (traceability) in SQL MATCH:
 ```sql
 SELECT name, origin, certification, lot
 FROM (
-  MATCH {type: Product, where: (batch = 'BATCH-2026-0218')}
+  MATCH {type: Product, where: (batchId = 'BATCH-2026-0218')}
         .in('ASSEMBLED_FROM'){as: material, while: ($depth < 8)}
   RETURN material.name AS name, material.origin AS origin,
          material.certification AS certification, material.lot AS lot
