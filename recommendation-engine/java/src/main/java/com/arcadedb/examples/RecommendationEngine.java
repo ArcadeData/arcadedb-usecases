@@ -19,8 +19,9 @@ public class RecommendationEngine {
       tryRun(() -> runQuery3Trending(db), "Query 3");
       tryRun(() -> runQuery4StreamingHybrid(db), "Query 4");
       tryRun(() -> runQuery5EcommerceCategory(db), "Query 5");
+      tryRun(() -> runQuery6HybridMultiModel(db), "Query 6");
     }
-    System.out.println("nAll queries complete.");
+    System.out.println("\nAll queries complete.");
   }
 
   private static void tryRun(Runnable r, String name) {
@@ -159,8 +160,83 @@ public class RecommendationEngine {
     }
   }
 
+  // Query 6: Hybrid Multi-Model Recommendation
+  private static void runQuery6HybridMultiModel(RemoteDatabase db) {
+    printHeader("Query 6: Hybrid Multi-Model Recommendation",
+        "Combine graph + vector + time-series for u1.");
+
+    // Step 1: Graph — collaborative filtering candidates
+    System.out.println("  --- Step 1: Graph — collaborative filtering candidates ---");
+    String cypher =
+        """
+            MATCH (me:User {id: 'u1'})
+                  -[:PURCHASED]->(p:Product)
+                  <-[:PURCHASED]-(other:User)
+                  -[:PURCHASED]->(rec:Product)
+            WHERE rec <> p
+              AND NOT (me)-[:PURCHASED]->(rec)
+            RETURN DISTINCT rec.name AS name""";
+
+    java.util.List<String> candidates = new java.util.ArrayList<>();
+    try (ResultSet rs = db.query("cypher", cypher)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        String name = r.getProperty("name");
+        candidates.add(name);
+        System.out.printf("    %s%n", name);
+      }
+    }
+
+    if (candidates.isEmpty()) {
+      System.out.println("  No candidates found.");
+      return;
+    }
+
+    // Step 2: Vector — rank candidates by similarity to u1 preference
+    System.out.println("  --- Step 2: Vector — rank by similarity to u1 preference ---");
+    String candidateList = candidates.stream()
+        .map(n -> "'" + n.replace("'", "''") + "'")
+        .collect(java.util.stream.Collectors.joining(", "));
+
+    String vectorSql = String.format(
+        """
+            SELECT name, category, price
+            FROM Product
+            WHERE name IN [%s]
+            ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 10) DESC""", candidateList);
+
+    try (ResultSet rs = db.query("sql", vectorSql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("    %-20s | %-12s | $%-8.2f%n",
+            r.getProperty("name"),
+            r.getProperty("category"),
+            ((Number) r.getProperty("price")).doubleValue());
+      }
+    }
+
+    // Step 3: Time-series — trending boost
+    System.out.println("  --- Step 3: Time-series — trending boost ---");
+    String trendingSql = String.format(
+        """
+            SELECT productId, sum(purchaseCount) AS trending_score
+            FROM ProductInteraction
+            WHERE productId IN [%s]
+            GROUP BY productId
+            ORDER BY trending_score DESC""", candidateList);
+
+    try (ResultSet rs = db.query("sql", trendingSql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("    %-20s | trending: %s%n",
+            r.getProperty("productId"),
+            r.getProperty("trending_score"));
+      }
+    }
+  }
+
   private static void printHeader(String title, String description) {
-    System.out.println("n" + "=".repeat(70));
+    System.out.println("\n" + "=".repeat(70));
     System.out.println("  " + title);
     System.out.println("  " + description);
     System.out.println("=".repeat(70));

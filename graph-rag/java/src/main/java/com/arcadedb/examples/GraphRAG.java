@@ -110,14 +110,15 @@ public class GraphRAG {
     }
   }
 
-  // Query 4: Composite Scoring — entity count
-  // Ranks chunks by number of entity connections
+  // Query 4: Triple Hybrid — Full-Text + Graph + Entity Count
+  // Combines full-text filtering, graph traversal, and entity scoring
   private static void runQuery4CompositeScoring(Driver driver) {
-    printHeader("Query 4: Composite Scoring (Entity Connections)",
-        "Rank chunks by number of mentioned entities.");
+    printHeader("Query 4: Triple Hybrid — Full-Text + Graph + Entity Count",
+        "Filter by full-text, rank by entity connections (vector via queries.sh).");
 
     String cypher = """
         MATCH (chunk:Chunk)
+        WHERE chunk.content CONTAINS 'knowledge graph'
         OPTIONAL MATCH (chunk)-[:MENTIONS]->(entity)
         RETURN chunk.content AS content, chunk.source AS source,
                count(entity) AS entity_count

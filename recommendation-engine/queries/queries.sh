@@ -93,3 +93,41 @@ WHERE category = 'Electronics'
 ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 30) DESC
 LIMIT 30
 "
+
+# ─────────────────────────────────────────────────────────────────────────────
+echo ""
+echo "=== Query 6: Hybrid Multi-Model Recommendation ==="
+echo "Combine graph (collaborative filtering), vector (user preference similarity),"
+echo "and time-series (trending scores) for u1."
+echo ""
+
+echo "--- Step 1: Graph — collaborative filtering candidates ---"
+query "cypher" "
+MATCH (me:User {id: 'u1'})
+      -[:PURCHASED]->(p:Product)
+      <-[:PURCHASED]-(other:User)
+      -[:PURCHASED]->(rec:Product)
+WHERE rec <> p
+  AND NOT (me)-[:PURCHASED]->(rec)
+RETURN DISTINCT rec.name AS name
+"
+
+echo ""
+echo "--- Step 2: Vector — rank candidates by similarity to u1 preference [0.9, 0.1, 0.1, 0.1] ---"
+echo "Note: candidate names are hardcoded from Step 1 results."
+query "sql" "
+SELECT name, category, price
+FROM Product
+WHERE name IN ['Running Shoes', 'Water Bottle', 'Yoga Mat', 'Tennis Racket']
+ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 10) DESC
+"
+
+echo ""
+echo "--- Step 3: Time-series — trending boost from recent interactions ---"
+query "sql" "
+SELECT productId, sum(purchaseCount) AS trending_score
+FROM ProductInteraction
+WHERE productId IN ['Running Shoes', 'Water Bottle', 'Yoga Mat', 'Tennis Racket']
+GROUP BY productId
+ORDER BY trending_score DESC
+"

@@ -81,11 +81,13 @@ public class KnowledgeGraph {
     }
   }
 
-  // Query 3: Full-Text Abstract Search (SQL + FULL_TEXT index)
+  // Query 3: Full-Text Search Meets Graph Context
   private static void runQuery3FullTextSearch(RemoteDatabase db) {
-    printHeader("Query 3: Full-Text Abstract Search",
-        "Find papers whose abstract mentions 'distributed' and 'consensus'.");
+    printHeader("Query 3: Full-Text Search Meets Graph Context",
+        "Find papers matching 'distributed AND consensus', then expand to co-authors.");
 
+    // Step 1: Full-text search
+    System.out.println("  --- Step 1: Full-text search ---");
     String sql =
         """
             SELECT id, title, year
@@ -93,13 +95,45 @@ public class KnowledgeGraph {
              WHERE SEARCH_INDEX('Paper[abstract]', 'distributed AND consensus') = true
              LIMIT 10""";
 
+    java.util.List<String> paperIds = new java.util.ArrayList<>();
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-5s | %d | %s%n",
-            r.getProperty("id"),
+        String id = r.getProperty("id");
+        paperIds.add(id);
+        System.out.printf("    %-5s | %d | %s%n",
+            id,
             ((Number) r.getProperty("year")).intValue(),
             r.getProperty("title"));
+      }
+    }
+
+    if (paperIds.isEmpty()) {
+      System.out.println("  No papers found.");
+      return;
+    }
+
+    // Step 2: Graph expansion — co-authors of matching papers
+    System.out.println("  --- Step 2: Graph expansion — co-authors ---");
+    String idList = paperIds.stream()
+        .map(id -> "'" + id.replace("'", "''") + "'")
+        .collect(java.util.stream.Collectors.joining(", "));
+
+    String graphSql = String.format(
+        """
+            SELECT paper, author
+             FROM (
+              MATCH {type: Paper, as: p, where: (id IN [%s])}
+                    .in('CO_AUTHORED'){as: a}
+              RETURN p.title AS paper, a.name AS author
+             )""", idList);
+
+    try (ResultSet rs = db.query("sql", graphSql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("    %-50s | %s%n",
+            r.getProperty("paper"),
+            r.getProperty("author"));
       }
     }
   }

@@ -49,14 +49,29 @@ LIMIT 10
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Query 3: Full-Text Abstract Search ==="
-echo "Find papers whose abstract mentions 'distributed' and 'consensus'."
+echo "=== Query 3: Full-Text Search Meets Graph Context ==="
+echo "Find papers matching 'distributed AND consensus', then expand to co-authors."
 echo ""
+
+echo "--- Step 1: Full-text search ---"
 query "sql" "
 SELECT id, title, year
 FROM Paper
 WHERE SEARCH_INDEX('Paper[abstract]', 'distributed AND consensus') = true
 LIMIT 10
+"
+
+echo ""
+echo "--- Step 2: Graph expansion — co-authors of matching papers ---"
+echo "Note: paper IDs are hardcoded from Step 1 results since SEARCH_INDEX"
+echo "is not supported inside a MATCH where clause."
+query "sql" "
+SELECT paper, author
+FROM (
+  MATCH {type: Paper, as: p, where: (id IN ['p1', 'p9'])}
+        .in('CO_AUTHORED'){as: a}
+  RETURN p.title AS paper, a.name AS author
+)
 "
 
 # ─────────────────────────────────────────────────────────────────────────────

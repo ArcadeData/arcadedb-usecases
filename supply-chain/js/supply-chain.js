@@ -48,12 +48,12 @@ async function runQuery2(client) {
     'If Shenzhen Micro Ltd is disrupted, which products are affected?');
 
   const sqlAffected = `
-    SELECT component, product
+    SELECT component, product, revenue_at_risk
     FROM (
       MATCH {type: Supplier, where: (name = 'Shenzhen Micro Ltd')}
             .out('SUPPLIES'){as: c}
             .out('CONTAINS'){as: p}
-      RETURN c.name AS component, p.name AS product
+      RETURN c.name AS component, p.name AS product, p.revenue_annual AS revenue_at_risk
     )`;
 
   const sqlAlternatives = `
@@ -77,7 +77,8 @@ async function runQuery2(client) {
 
   for (const row of affected.rows) {
     const alts = altMap[row.component] || [];
-    console.log(`  ${String(row.component).padEnd(20)} | ${String(row.product).padEnd(20)} | alternatives: [${alts.join(', ')}]`);
+    const rev = Number(row.revenue_at_risk || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    console.log(`  ${String(row.component).padEnd(20)} | ${String(row.product).padEnd(20)} | revenue: ${rev.padStart(12)} | alternatives: [${alts.join(', ')}]`);
   }
 }
 
@@ -141,6 +142,51 @@ async function runQuery5(client) {
   }
 }
 
+// Query 6: Inventory Intelligence (pure SQL MATCH)
+async function runQuery6(client) {
+  printHeader('Query 6: Inventory Intelligence',
+    'Identify products in warehouses with low stock (< 5 weeks).');
+
+  const sql = `
+    SELECT warehouse, stock_weeks, product, revenue_annual
+    FROM (
+      MATCH {type: Warehouse, as: w, where: (stock_weeks < 5)}
+            .in('STORED_AT'){as: p}
+      RETURN w.name AS warehouse, w.stock_weeks AS stock_weeks,
+             p.name AS product, p.revenue_annual AS revenue_annual
+    )
+    ORDER BY stock_weeks ASC`;
+
+  const res = await client.query(sql);
+  for (const row of res.rows) {
+    const rev = Number(row.revenue_annual || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    console.log(`  ${String(row.warehouse).padEnd(15)} | ${String(row.stock_weeks).padStart(2)} weeks | ${String(row.product).padEnd(20)} | revenue: ${rev}`);
+  }
+}
+
+// Query 7: Recall Simulation (SQL MATCH — Cypher not available over PostgreSQL protocol)
+// Data path: RawMaterial -> Component -> Product (2 ASSEMBLED_FROM hops), then SHIPPED_TO -> Customer
+async function runQuery7(client) {
+  printHeader('Query 7: Recall Simulation',
+    'Trace downstream from raw material lot LOT-2026-001 to affected products and customers.');
+
+  const sql = `
+    SELECT material, product, sku, customer
+    FROM (
+      MATCH {type: RawMaterial, where: (lot = 'LOT-2026-001')}{as: rm}
+            .out('ASSEMBLED_FROM'){as: comp}
+            .out('ASSEMBLED_FROM'){as: p}
+            .out('SHIPPED_TO'){as: c}
+      RETURN rm.name AS material, p.name AS product,
+             p.sku AS sku, c.customerId AS customer
+    )`;
+
+  const res = await client.query(sql);
+  for (const row of res.rows) {
+    console.log(`  ${String(row.material).padEnd(20)} | ${String(row.product).padEnd(20)} | sku: ${String(row.sku).padEnd(15)} | customer: ${row.customer}`);
+  }
+}
+
 async function main() {
   const client = new Client({
     host: HOST,
@@ -159,6 +205,8 @@ async function main() {
     await tryRun(() => runQuery3(client), 'Query 3');
     await tryRun(() => runQuery4(client), 'Query 4');
     await tryRun(() => runQuery5(client), 'Query 5');
+    await tryRun(() => runQuery6(client), 'Query 6');
+    await tryRun(() => runQuery7(client), 'Query 7');
   } finally {
     await client.end();
   }
