@@ -66,7 +66,6 @@ python iam.py
 | `HAS_ROLE` | Edge | Group/Identity → Role |
 | `GRANTS` | Edge | Role → Permission |
 | `APPLIES_TO` | Edge | Permission → Resource |
-| `INHERITS_FROM` | Edge | Role → Role |
 | `GOVERNED_BY` | Edge | Resource → Policy |
 | `AccessLog` | Document | `identityEmail`, `resourceName`, `action`, `source_ip`, `recordedAt` |
 
@@ -86,7 +85,7 @@ python iam.py
 
 - 8 identities (4 employees, 2 contractors, 2 service accounts)
 - 5 groups with nested memberships (Contractors → Engineering → Platform-Admins)
-- 6 roles with inheritance (Admin inherits Developer)
+- 6 roles
 - 6 permissions scoped to 6 resources
 - 3 compliance policies (SOX, GDPR, Least-Privilege)
 - 15 access log entries spanning 6 months

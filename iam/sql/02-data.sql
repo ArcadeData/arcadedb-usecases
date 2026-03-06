@@ -73,9 +73,6 @@ CREATE EDGE HAS_ROLE FROM (SELECT FROM Identity WHERE email = 'svc-deploy@compan
 CREATE EDGE HAS_ROLE FROM (SELECT FROM Identity WHERE email = 'svc-backup@company.com') TO (SELECT FROM Role WHERE name = 'Viewer')
 -- Contractors group has Viewer role
 CREATE EDGE HAS_ROLE FROM (SELECT FROM `Group` WHERE name = 'Contractors') TO (SELECT FROM Role WHERE name = 'Viewer')
--- ── INHERITS_FROM edges (Role -> Role) ─────────────────────────────────────
--- Admin inherits all Developer permissions
-CREATE EDGE INHERITS_FROM FROM (SELECT FROM Role WHERE name = 'Admin') TO (SELECT FROM Role WHERE name = 'Developer')
 -- ── GRANTS edges (Role -> Permission) ──────────────────────────────────────
 -- Admin grants admin permission
 CREATE EDGE GRANTS FROM (SELECT FROM Role WHERE name = 'Admin') TO (SELECT FROM Permission WHERE action = 'admin')
