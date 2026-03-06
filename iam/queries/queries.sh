@@ -169,16 +169,29 @@ echo ""
 echo "=== Query 7: Impact Analysis (What-If) ==="
 echo "What happens if we remove the Platform-Admins group?"
 echo ""
+
+echo "--- Permissions granted through Platform-Admins ---"
 query "sql" "
-SELECT identity, role, action, resource
+SELECT role, action, resource
 FROM (
-  MATCH {type: Identity, as: u}
-        .out('MEMBER_OF'){while: (\$depth < 3), where: (name = 'Platform-Admins')}{as: target}
+  MATCH {type: \`Group\`, where: (name = 'Platform-Admins'), as: target}
         .out('HAS_ROLE'){as: r}
         .out('GRANTS'){as: p}
         .out('APPLIES_TO'){as: res}
-  RETURN u.email AS identity, r.name AS role,
-         p.action AS action, res.name AS resource
+  RETURN r.name AS role, p.action AS action, res.name AS resource
 )
-ORDER BY identity, resource
+ORDER BY resource
+"
+
+echo ""
+echo "--- Identities affected (members of Platform-Admins, direct or transitive) ---"
+query "sql" "
+SELECT DISTINCT identity
+FROM (
+  MATCH {type: \`Group\`, where: (name = 'Platform-Admins')}
+        .in('MEMBER_OF'){as: member, while: (\$depth < 3)}
+  RETURN member.email AS identity
+)
+WHERE identity IS NOT NULL
+ORDER BY identity
 "

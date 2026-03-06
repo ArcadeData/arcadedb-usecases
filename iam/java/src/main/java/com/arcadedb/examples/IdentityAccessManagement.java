@@ -299,28 +299,51 @@ public class IdentityAccessManagement {
     printHeader("Query 7: Impact Analysis (What-If)",
         "What happens if we remove the Platform-Admins group?");
 
-    String sql =
+    // Step 1: Permissions granted through Platform-Admins
+    System.out.println("  --- Permissions granted through Platform-Admins ---");
+    String permsSql =
         """
-            SELECT identity, role, action, resource
+            SELECT role, action, resource
             FROM (
-              MATCH {type: Identity, as: u}
-                    .out('MEMBER_OF'){while: ($depth < 3), where: (name = 'Platform-Admins')}{as: target}
+              MATCH {type: `Group`, where: (name = 'Platform-Admins'), as: target}
                     .out('HAS_ROLE'){as: r}
                     .out('GRANTS'){as: p}
                     .out('APPLIES_TO'){as: res}
-              RETURN u.email AS identity, r.name AS role,
-                     p.action AS action, res.name AS resource
+              RETURN r.name AS role, p.action AS action, res.name AS resource
             )
-            ORDER BY identity, resource""";
+            ORDER BY resource""";
 
-    try (ResultSet rs = db.query("sql", sql)) {
+    try (ResultSet rs = db.query("sql", permsSql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  %-30s | %-10s | %-8s | %s%n",
-            r.getProperty("identity"),
+        System.out.printf("    %-10s | %-8s | %s%n",
             r.getProperty("role"),
             r.getProperty("action"),
             r.getProperty("resource"));
+      }
+    }
+
+    // Step 2: Identities affected (members of Platform-Admins, direct or transitive)
+    System.out.println("  --- Identities affected ---");
+    String membersSql =
+        """
+            SELECT identity
+            FROM (
+              MATCH {type: `Group`, where: (name = 'Platform-Admins')}
+                    .in('MEMBER_OF'){as: member, while: ($depth < 3)}
+              RETURN member.email AS identity
+            )
+            WHERE identity IS NOT NULL
+            ORDER BY identity""";
+
+    Set<String> seen = new HashSet<>();
+    try (ResultSet rs = db.query("sql", membersSql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        String identity = r.getProperty("identity");
+        if (seen.add(identity)) {
+          System.out.printf("    %s%n", identity);
+        }
       }
     }
   }

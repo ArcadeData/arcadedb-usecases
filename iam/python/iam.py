@@ -203,21 +203,36 @@ def run_query7(cur):
     print_header('Query 7: Impact Analysis (What-If)',
                  'What happens if we remove the Platform-Admins group?')
 
+    # Step 1: Permissions granted through Platform-Admins
+    print('  --- Permissions granted through Platform-Admins ---')
     cur.execute("""
-        SELECT identity, role, action, resource
+        SELECT role, action, resource
         FROM (
-          MATCH {type: Identity, as: u}
-                .out('MEMBER_OF'){while: ($depth < 3), where: (name = 'Platform-Admins')}{as: target}
+          MATCH {type: `Group`, where: (name = 'Platform-Admins'), as: target}
                 .out('HAS_ROLE'){as: r}
                 .out('GRANTS'){as: p}
                 .out('APPLIES_TO'){as: res}
-          RETURN u.email AS identity, r.name AS role,
-                 p.action AS action, res.name AS resource
+          RETURN r.name AS role, p.action AS action, res.name AS resource
         )
-        ORDER BY identity, resource
+        ORDER BY resource
     """)
     for row in cur.fetchall():
-        print(f'  {str(row[0]):30s} | {str(row[1]):10s} | {str(row[2]):8s} | {row[3]}')
+        print(f'    {str(row[0]):10s} | {str(row[1]):8s} | {row[2]}')
+
+    # Step 2: Identities affected (members of Platform-Admins, direct or transitive)
+    print('  --- Identities affected ---')
+    cur.execute("""
+        SELECT DISTINCT identity
+        FROM (
+          MATCH {type: `Group`, where: (name = 'Platform-Admins')}
+                .in('MEMBER_OF'){as: member, while: ($depth < 3)}
+          RETURN member.email AS identity
+        )
+        WHERE identity IS NOT NULL
+        ORDER BY identity
+    """)
+    for row in cur.fetchall():
+        print(f'    {row[0]}')
 
 
 def main():
