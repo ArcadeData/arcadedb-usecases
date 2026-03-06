@@ -114,6 +114,20 @@ updates:
         patterns:
           - "org.apache.maven.plugins:*"
 
+  - package-ecosystem: "maven"
+    directory: "/iam/java"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      arcadedb:
+        patterns:
+          - "com.arcadedb:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
   # ── npm ────────────────────────────────────────────────────────────────────
   - package-ecosystem: "npm"
     directory: "/supply-chain/js"
@@ -125,6 +139,18 @@ updates:
       node-pg:
         patterns:
           - "pg"
+
+  # ── pip ──────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "pip"
+    directory: "/iam/python"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      psycopg:
+        patterns:
+          - "psycopg*"
 
   # ── Docker Compose ──────────────────────────────────────────────────────────
   - package-ecosystem: "docker-compose"
@@ -184,6 +210,17 @@ updates:
 
   - package-ecosystem: "docker-compose"
     directory: "/supply-chain"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      arcadedb-docker:
+        patterns:
+          - "arcadedata/arcadedb"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/iam"
     schedule:
       interval: weekly
       day: "sunday"
