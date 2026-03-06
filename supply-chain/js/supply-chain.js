@@ -165,6 +165,7 @@ async function runQuery6(client) {
 }
 
 // Query 7: Recall Simulation (SQL MATCH — Cypher not available over PostgreSQL protocol)
+// Data path: RawMaterial -> Component -> Product (2 ASSEMBLED_FROM hops), then SHIPPED_TO -> Customer
 async function runQuery7(client) {
   printHeader('Query 7: Recall Simulation',
     'Trace downstream from raw material lot LOT-2026-001 to affected products and customers.');

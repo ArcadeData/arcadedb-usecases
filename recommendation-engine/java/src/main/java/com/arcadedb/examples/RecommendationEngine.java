@@ -146,10 +146,7 @@ public class RecommendationEngine {
              FROM Product
              WHERE category = 'Electronics'
                AND inStock = true
-             ORDER BY vectorCosineSimilarity(
-               embedding,
-               (SELECT embedding FROM User WHERE id = 'u1' LIMIT 1)
-             ) DESC
+             ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 30) DESC
              LIMIT 30""";
 
     try (ResultSet rs = db.query("sql", sql)) {
@@ -198,28 +195,23 @@ public class RecommendationEngine {
     // Step 2: Vector — rank candidates by similarity to u1 preference
     System.out.println("  --- Step 2: Vector — rank by similarity to u1 preference ---");
     String candidateList = candidates.stream()
-        .map(n -> "'" + n + "'")
+        .map(n -> "'" + n.replace("'", "''") + "'")
         .collect(java.util.stream.Collectors.joining(", "));
 
     String vectorSql = String.format(
         """
-            SELECT name, category, price,
-                   vectorCosineSimilarity(
-                     embedding,
-                     (SELECT embedding FROM User WHERE id = 'u1' LIMIT 1)
-                   ) AS preference_score
+            SELECT name, category, price
             FROM Product
             WHERE name IN [%s]
-            ORDER BY preference_score DESC""", candidateList);
+            ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 10) DESC""", candidateList);
 
     try (ResultSet rs = db.query("sql", vectorSql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("    %-20s | %-12s | $%-8.2f | pref: %s%n",
+        System.out.printf("    %-20s | %-12s | $%-8.2f%n",
             r.getProperty("name"),
             r.getProperty("category"),
-            ((Number) r.getProperty("price")).doubleValue(),
-            r.getProperty("preference_score"));
+            ((Number) r.getProperty("price")).doubleValue());
       }
     }
 

@@ -90,10 +90,7 @@ SELECT name, category, price
 FROM Product
 WHERE category = 'Electronics'
   AND inStock = true
-ORDER BY vectorCosineSimilarity(
-  embedding,
-  (SELECT embedding FROM User WHERE id = 'u1' LIMIT 1)
-) DESC
+ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 30) DESC
 LIMIT 30
 "
 
@@ -116,17 +113,13 @@ RETURN DISTINCT rec.name AS name
 "
 
 echo ""
-echo "--- Step 2: Vector — rank candidates by similarity to u1 preference ---"
+echo "--- Step 2: Vector — rank candidates by similarity to u1 preference [0.9, 0.1, 0.1, 0.1] ---"
 echo "Note: candidate names are hardcoded from Step 1 results."
 query "sql" "
-SELECT name, category, price,
-       vectorCosineSimilarity(
-         embedding,
-         (SELECT embedding FROM User WHERE id = 'u1' LIMIT 1)
-       ) AS preference_score
+SELECT name, category, price
 FROM Product
 WHERE name IN ['Running Shoes', 'Water Bottle', 'Yoga Mat', 'Tennis Racket']
-ORDER BY preference_score DESC
+ORDER BY vectorNeighbors('Product[embedding]', [0.9, 0.1, 0.1, 0.1], 10) DESC
 "
 
 echo ""

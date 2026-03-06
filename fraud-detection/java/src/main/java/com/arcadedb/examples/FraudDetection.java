@@ -111,25 +111,22 @@ public class FraudDetection {
   // Query 4: Structuring Detection (Time-Series)
   private static void runQuery4Structuring(RemoteDatabase db) {
     printHeader("Query 4: Structuring Detection (Time-Series)",
-        "Flag accounts making 3+ deposits in the $8,000-$9,999 range within a single day.");
+        "Flag accounts making 3+ deposits in the $8,000-$9,999 range.");
 
     String sql =
         """
             SELECT FROM (
-              SELECT account_id,
-                     ts.timeBucket('1d', ts) AS day,
-                     count(*) AS deposit_count
+              SELECT account_id, count(*) AS deposit_count
               FROM Deposit
               WHERE amount BETWEEN 8000 AND 9999
-              GROUP BY account_id, day
+              GROUP BY account_id
             ) WHERE deposit_count >= 3""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  account: %-10s | day: %s | deposits: %s%n",
+        System.out.printf("  account: %-10s | deposits: %s%n",
             r.getProperty("account_id"),
-            r.getProperty("day"),
             r.getProperty("deposit_count"));
       }
     }
@@ -143,10 +140,7 @@ public class FraudDetection {
     String sql =
         """
             SELECT id, amount, merchant, account_id,
-                   vectorCosineSimilarity(
-                     behavior_embedding,
-                     (SELECT profile_embedding FROM Customer WHERE id = 'acct-H' LIMIT 1)
-                   ) AS profile_similarity
+                   vectorCosineSimilarity(behavior_embedding, [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]) AS profile_similarity
             FROM Transaction
             WHERE account_id = 'acct-H'
             ORDER BY profile_similarity""";

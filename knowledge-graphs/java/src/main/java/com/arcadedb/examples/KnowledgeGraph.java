@@ -116,7 +116,7 @@ public class KnowledgeGraph {
     // Step 2: Graph expansion — co-authors of matching papers
     System.out.println("  --- Step 2: Graph expansion — co-authors ---");
     String idList = paperIds.stream()
-        .map(id -> "'" + id + "'")
+        .map(id -> "'" + id.replace("'", "''") + "'")
         .collect(java.util.stream.Collectors.joining(", "));
 
     String graphSql = String.format(
