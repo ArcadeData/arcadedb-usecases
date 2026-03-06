@@ -150,7 +150,7 @@ async function runQuery6(client) {
   const sql = `
     SELECT warehouse, stock_weeks, product, revenue_annual
     FROM (
-      MATCH {type: Warehouse, where: (stock_weeks < 5)}{as: w}
+      MATCH {type: Warehouse, as: w, where: (stock_weeks < 5)}
             .in('STORED_AT'){as: p}
       RETURN w.name AS warehouse, w.stock_weeks AS stock_weeks,
              p.name AS product, p.revenue_annual AS revenue_annual

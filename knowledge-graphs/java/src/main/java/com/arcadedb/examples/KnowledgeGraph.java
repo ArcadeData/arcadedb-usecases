@@ -123,7 +123,7 @@ public class KnowledgeGraph {
         """
             SELECT paper, author
              FROM (
-              MATCH {type: Paper, where: (id IN [%s])}{as: p}
+              MATCH {type: Paper, as: p, where: (id IN [%s])}
                     .in('CO_AUTHORED'){as: a}
               RETURN p.title AS paper, a.name AS author
              )""", idList);

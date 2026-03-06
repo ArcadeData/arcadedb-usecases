@@ -68,7 +68,7 @@ echo "is not supported inside a MATCH where clause."
 query "sql" "
 SELECT paper, author
 FROM (
-  MATCH {type: Paper, where: (id IN ['p1', 'p9'])}{as: p}
+  MATCH {type: Paper, as: p, where: (id IN ['p1', 'p9'])}
         .in('CO_AUTHORED'){as: a}
   RETURN p.title AS paper, a.name AS author
 )
