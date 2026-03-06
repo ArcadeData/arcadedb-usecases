@@ -64,21 +64,24 @@ echo "Track access to SOX-governed resources with policy lineage."
 echo ""
 
 echo "--- SOX-governed resources ---"
-query "sql" "
+SOX_RESULT=$(query "sql" "
 SELECT resource, policy
 FROM (
   MATCH {type: Resource, as: res}
         .out('GOVERNED_BY'){as: pol, where: (name = 'SOX-Compliance')}
   RETURN res.name AS resource, pol.name AS policy
 )
-"
+")
+echo "$SOX_RESULT"
+
+RESOURCE_LIST=$(echo "$SOX_RESULT" | jq -r '[.[].resource] | map("'"'"'" + . + "'"'"'") | join(", ")')
 
 echo ""
 echo "--- Access logs for SOX-scoped resources ---"
 query "sql" "
 SELECT identityEmail, action, resourceName, recordedAt, source_ip
 FROM AccessLog
-WHERE resourceName IN ['Production-DB', 'Payment-API', 'Audit-System']
+WHERE resourceName IN [${RESOURCE_LIST}]
   AND recordedAt > '2025-12-01 00:00:00'
 ORDER BY recordedAt DESC
 "
@@ -90,7 +93,7 @@ echo "Find users who can both approve AND execute on the same resource."
 echo ""
 
 echo "--- Identities with approve permission ---"
-query "sql" "
+APPROVERS=$(query "sql" "
 SELECT identity, resource, role
 FROM (
   MATCH {type: Identity, as: u}
@@ -100,11 +103,12 @@ FROM (
         .out('APPLIES_TO'){as: res}
   RETURN u.email AS identity, res.name AS resource, r.name AS role
 )
-"
+")
+echo "$APPROVERS"
 
 echo ""
 echo "--- Identities with execute permission ---"
-query "sql" "
+EXECUTORS=$(query "sql" "
 SELECT identity, resource, role
 FROM (
   MATCH {type: Identity, as: u}
@@ -114,10 +118,16 @@ FROM (
         .out('APPLIES_TO'){as: res}
   RETURN u.email AS identity, res.name AS resource, r.name AS role
 )
-"
+")
+echo "$EXECUTORS"
 
 echo ""
-echo "SoD violation: identities appearing in BOTH lists for the same resource (carol@company.com on Payment-API)"
+echo "--- SoD violations (approve AND execute on same resource) ---"
+jq -n --argjson a "$APPROVERS" --argjson e "$EXECUTORS" '
+  [$a[] | {key: (.identity + "|" + .resource), value: .}] | from_entries as $am
+  | [$e[] | select($am[.identity + "|" + .resource])
+     | "VIOLATION: \(.identity) on \(.resource) | approve via: \($am[.identity + "|" + .resource].role) | execute via: \(.role)"]
+  | .[]' -r
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
@@ -126,7 +136,7 @@ echo "Find identities with permissions but no access in the last 90 days."
 echo ""
 
 echo "--- Step 1: Identities with granted permissions ---"
-query "sql" "
+GRANTED=$(query "sql" "
 SELECT DISTINCT identity, resource
 FROM (
   MATCH {type: Identity, as: u}
@@ -137,19 +147,25 @@ FROM (
   RETURN u.email AS identity, res.name AS resource
 )
 ORDER BY identity
-"
+")
+echo "$GRANTED"
 
 echo ""
 echo "--- Step 2: Identities with recent access (last 90 days) ---"
-query "sql" "
+RECENT=$(query "sql" "
 SELECT DISTINCT identityEmail
 FROM AccessLog
 WHERE recordedAt > '2025-12-06 00:00:00'
 ORDER BY identityEmail
-"
+")
+echo "$RECENT"
 
 echo ""
-echo "Dormant identities = Step 1 minus Step 2 (bob@company.com, frank@company.com, svc-backup@company.com)"
+echo "--- Dormant identities (have permissions but no recent access) ---"
+jq -n --argjson g "$GRANTED" --argjson r "$RECENT" '
+  ([$g[].identity] | unique) as $granted
+  | ([$r[].identityEmail] | unique) as $recent
+  | ($granted - $recent) | .[]' -r
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
