@@ -27,19 +27,18 @@ async function runQuery1(client) {
     'Find all suppliers (up to 4 tiers) feeding into Widget Pro X.');
 
   const sql = `
-    SELECT DISTINCT s.name, s.country, s.risk_score
+    SELECT DISTINCT name, country, risk_score
     FROM (
       MATCH {type: Product, where: (sku = 'WIDGET-PRO-X')}
             .in('CONTAINS'){as: c}
             .in('SUPPLIES'){as: s, while: ($depth < 4)}
-      RETURN s
+      RETURN s.name AS name, s.country AS country, s.risk_score AS risk_score
     )
-    ORDER BY s.risk_score DESC`;
+    ORDER BY risk_score DESC`;
 
   const res = await client.query(sql);
   for (const row of res.rows) {
-    console.log('  %-25s | %-15s | risk: %s',
-      row['s.name'] || row.name, row['s.country'] || row.country, row['s.risk_score'] || row.risk_score);
+    console.log(`  ${String(row.name).padEnd(25)} | ${String(row.country).padEnd(15)} | risk: ${row.risk_score}`);
   }
 }
 
@@ -49,21 +48,21 @@ async function runQuery2(client) {
     'If Shenzhen Micro Ltd is disrupted, which products are affected?');
 
   const sqlAffected = `
-    SELECT c.name AS component, p.name AS product
+    SELECT component, product
     FROM (
       MATCH {type: Supplier, where: (name = 'Shenzhen Micro Ltd')}
             .out('SUPPLIES'){as: c}
             .out('CONTAINS'){as: p}
-      RETURN c, p
+      RETURN c.name AS component, p.name AS product
     )`;
 
   const sqlAlternatives = `
-    SELECT alt.name AS alternative, c.name AS component
+    SELECT alternative, component
     FROM (
       MATCH {type: Supplier, where: (name = 'Shenzhen Micro Ltd')}
             .out('SUPPLIES'){as: c}
             .in('ALTERNATIVE_FOR'){as: alt}
-      RETURN alt, c
+      RETURN alt.name AS alternative, c.name AS component
     )`;
 
   const affected = await client.query(sqlAffected);
@@ -78,8 +77,7 @@ async function runQuery2(client) {
 
   for (const row of affected.rows) {
     const alts = altMap[row.component] || [];
-    console.log('  %-20s | %-20s | alternatives: [%s]',
-      row.component, row.product, alts.join(', '));
+    console.log(`  ${String(row.component).padEnd(20)} | ${String(row.product).padEnd(20)} | alternatives: [${alts.join(', ')}]`);
   }
 }
 
@@ -99,11 +97,9 @@ async function runQuery3(client) {
 
   const res = await client.query(sql);
   for (const row of res.rows) {
-    console.log('  %-25s | avg: %6s hrs | delayed: %s/%s',
-      row.supplierid || row.supplierId,
-      Number(row.avg_lead_time).toFixed(0),
-      row.total_delayed,
-      row.total_deliveries);
+    const supplier = String(row.supplierid || row.supplierId);
+    const avgTime = Number(row.avg_lead_time).toFixed(0);
+    console.log(`  ${supplier.padEnd(25)} | avg: ${avgTime.padStart(6)} hrs | delayed: ${row.total_delayed}/${row.total_deliveries}`);
   }
 }
 
@@ -121,8 +117,7 @@ async function runQuery4(client) {
 
   const res = await client.query(sql);
   for (const row of res.rows) {
-    console.log('  %-25s | %-15s | risk: %s',
-      row.name, row.country, row.risk_score);
+    console.log(`  ${String(row.name).padEnd(25)} | ${String(row.country).padEnd(15)} | risk: ${row.risk_score}`);
   }
 }
 
@@ -142,8 +137,7 @@ async function runQuery5(client) {
 
   const res = await client.query(sql);
   for (const row of res.rows) {
-    console.log('  %-25s | origin: %-10s | cert: %-10s | lot: %s',
-      row.name, row.origin || '-', row.certification || '-', row.lot || '-');
+    console.log(`  ${String(row.name).padEnd(25)} | origin: ${String(row.origin || '-').padEnd(10)} | cert: ${String(row.certification || '-').padEnd(10)} | lot: ${row.lot || '-'}`);
   }
 }
 

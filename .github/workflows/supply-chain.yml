@@ -49,9 +49,17 @@ jobs:
 
       - name: Set up Node.js
         if: matrix.runner == 'js'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+
+      - name: Cache npm
+        if: matrix.runner == 'js'
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-supply-chain-${{ hashFiles('supply-chain/js/package.json') }}
+          restore-keys: ${{ runner.os }}-npm-supply-chain-
 
       - name: Install JS dependencies
         if: matrix.runner == 'js'
