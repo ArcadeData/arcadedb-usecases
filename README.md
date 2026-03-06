@@ -15,6 +15,7 @@ and runnable demos via both `curl` and a Java program.
 | [fraud-detection](./fraud-detection/) | Fraud detection system unifying graph, vector, and time-series signals | Graph traversal, Vector similarity, Time-series, Cypher |
 | [realtime-analytics](./realtime-analytics/) | Unified IoT and service monitoring platform | Time-series, Graph traversal, Cypher |
 | [social-network-analytics](./social-network-analytics/) | Social network analytics with materialized view dashboards | Materialized views, Graph traversal, Time-series, Polyglot (SQL + OpenCypher) |
+| [supply-chain](./supply-chain/) | Supply chain management with multi-tier visibility | Graph traversal, Vector similarity, Time-series, PostgreSQL protocol, JavaScript |
 
 ## Structure
 

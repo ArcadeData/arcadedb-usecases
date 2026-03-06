@@ -14,6 +14,7 @@ A collection of self-contained projects demonstrating [ArcadeDB](https://arcaded
 | `knowledge-graphs/` | `KnowledgeGraph` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
 | `graph-rag/` | `GraphRAG` | 26.3.1 | 21 | Bolt (`neo4j-java-driver`) + LangChain4j |
 | `fraud-detection/` | `FraudDetection` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
+| `supply-chain/` | `SupplyChain` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`pg`) |
 
 ## Directory Structure (per use case)
 

@@ -100,6 +100,32 @@ updates:
         patterns:
           - "org.apache.maven.plugins:*"
 
+  - package-ecosystem: "maven"
+    directory: "/supply-chain/java"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      arcadedb:
+        patterns:
+          - "com.arcadedb:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
+  # ── npm ────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/supply-chain/js"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      node-pg:
+        patterns:
+          - "pg"
+
   # ── Docker Compose ──────────────────────────────────────────────────────────
   - package-ecosystem: "docker-compose"
     directory: "/recommendation-engine"
@@ -147,6 +173,17 @@ updates:
 
   - package-ecosystem: "docker-compose"
     directory: "/realtime-analytics"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      arcadedb-docker:
+        patterns:
+          - "arcadedata/arcadedb"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/supply-chain"
     schedule:
       interval: weekly
       day: "sunday"
