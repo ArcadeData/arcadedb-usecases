@@ -1,0 +1,21 @@
+services:
+  arcadedb:
+    image: arcadedata/arcadedb:26.4.1-SNAPSHOT
+    ports:
+      - "2480:2480"
+      - "50051:50051"
+    environment:
+      JAVA_OPTS: >-
+        -Darcadedb.server.rootPassword=arcadedb
+        -Darcadedb.grpc.enabled=true
+        -Darcadedb.grpc.port=50051
+        -Darcadedb.grpc.mode=standard
+        -Darcadedb.grpc.reflection.enabled=true
+        -Darcadedb.grpc.health.enabled=true
+        -Darcadedb.server.plugins=GrpcServerPlugin
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:2480/api/v1/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
