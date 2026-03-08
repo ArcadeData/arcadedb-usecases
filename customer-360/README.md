@@ -52,7 +52,7 @@ java -jar target/customer-360.jar
 
 | Type | Kind | Key properties |
 |------|------|----------------|
-| `Customer` | Vertex | `id`, `name`, `email`, `phone`, `status`, `prefVector`, `lifetimeValue` |
+| `Customer` | Vertex | `id`, `name`, `email`, `phone`, `status`, `prefVector`, `recentBehavior`, `baselineBehavior`, `lifetimeValue` |
 | `Household` | Vertex | `id`, `name` |
 | `Product` | Vertex | `id`, `name`, `category`, `price`, `embedding` |
 | `Device` | Vertex | `id`, `deviceType`, `os` |
@@ -63,10 +63,18 @@ java -jar target/customer-360.jar
 | `Event` | Vertex | `id`, `eventType`, `channel`, `page` |
 | `Identifier` | Vertex | `id`, `identifierType`, `identifierValue` |
 | `PURCHASED` | Edge | Customer -> Product (`purchasedAt`) |
+| `LIVES_AT` | Edge | Customer -> Address |
+| `USED` | Edge | Customer -> Device |
 | `MEMBER_OF` | Edge | Customer -> Household |
+| `OPENED` | Edge | Customer -> Ticket |
+| `CLICKED` | Edge | Customer -> Campaign |
+| `REFERRED` | Edge | Customer -> Customer |
+| `CONNECTED_TO` | Edge | Customer -> Customer |
 | `OBSERVED_IN` | Edge | Identifier -> Session |
 | `INTERACTED` | Edge | Customer -> Event |
 | `FOLLOWED_BY` | Edge | Event -> Event |
+
+The `Device`, `Address`, and `Campaign` types with their edges (`LIVES_AT`, `USED`, `CLICKED`) are populated in the sample data and available for extension but not exercised by the current queries.
 
 ## Query Patterns
 
