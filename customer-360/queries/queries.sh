@@ -23,14 +23,15 @@ query() {
 echo "=== Query 1: Identity Resolution — Transitive Link Discovery ==="
 echo "Find all identifiers belonging to the same person as alice@example.com."
 echo ""
-query "cypher" "
-MATCH (id:Identifier {identifierValue: 'alice@example.com'})
-      -[:OBSERVED_IN]->(session:Session)
-      <-[:OBSERVED_IN]-(other:Identifier)
-WITH DISTINCT other
-MATCH (other)-[:OBSERVED_IN*1..3]-(transitive:Identifier)
-RETURN DISTINCT transitive.identifierType AS type,
-       transitive.identifierValue AS value
+query "sql" "
+SELECT linked.identifierType AS type, linked.identifierValue AS value
+FROM (
+  MATCH {type: Identifier, where: (identifierValue = 'alice@example.com')}
+        .out('OBSERVED_IN'){}.in('OBSERVED_IN'){}
+        .out('OBSERVED_IN'){}.in('OBSERVED_IN'){}
+        .out('OBSERVED_IN'){}.in('OBSERVED_IN'){as: linked}
+  RETURN DISTINCT linked
+)
 "
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -38,13 +39,12 @@ echo ""
 echo "=== Query 2: Fuzzy Name Matching for Deduplication ==="
 echo "Find probable duplicate customers by similar names sharing the same phone."
 echo ""
-query "sql" "
-SELECT a.id AS id_a, a.name AS name_a,
+query "cypher" "
+MATCH (a:Customer), (b:Customer)
+WHERE a.phone = b.phone AND a.id < b.id
+RETURN a.id AS id_a, a.name AS name_a,
        b.id AS id_b, b.name AS name_b,
        a.phone AS phone
-FROM Customer a, Customer b
-WHERE a.id < b.id
-  AND a.phone = b.phone
 "
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -75,7 +75,7 @@ CREATE EDGE TYPE OBSERVED_IN IF NOT EXISTS;
 CREATE EDGE TYPE INTERACTED IF NOT EXISTS;
 CREATE EDGE TYPE FOLLOWED_BY IF NOT EXISTS;
 -- Vector indexes (8 dimensions, COSINE)
-CREATE INDEX ON Customer (prefVector) VECTOR (8, COSINE);
-CREATE INDEX ON Product (embedding) VECTOR (8, COSINE);
+CREATE INDEX IF NOT EXISTS ON Customer (prefVector) LSM_VECTOR METADATA { dimensions: 8, similarity: 'COSINE' };
+CREATE INDEX IF NOT EXISTS ON Product (embedding) LSM_VECTOR METADATA { dimensions: 8, similarity: 'COSINE' };
 -- Full-text index on Ticket content
-CREATE INDEX ON Ticket (content) FULL_TEXT;
+CREATE INDEX IF NOT EXISTS ON Ticket (content) FULL_TEXT;

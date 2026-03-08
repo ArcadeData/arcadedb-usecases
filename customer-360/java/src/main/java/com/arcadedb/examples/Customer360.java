@@ -2,26 +2,18 @@ package com.arcadedb.examples;
 
 import com.arcadedb.query.sql.executor.Result;
 import com.arcadedb.query.sql.executor.ResultSet;
-import com.arcadedb.remote.grpc.RemoteGrpcDatabase;
-import com.arcadedb.remote.grpc.RemoteGrpcServer;
-
-import java.util.List;
+import com.arcadedb.remote.RemoteDatabase;
 
 public class Customer360 {
 
-  private static final String HOST      = System.getenv().getOrDefault("ARCADEDB_HOST", "localhost");
-  private static final int    GRPC_PORT = Integer.parseInt(System.getenv().getOrDefault("ARCADEDB_GRPC_PORT", "50051"));
-  private static final int    HTTP_PORT = Integer.parseInt(System.getenv().getOrDefault("ARCADEDB_PORT", "2480"));
-  private static final String DB_NAME   = "Customer360";
-  private static final String USER      = System.getenv().getOrDefault("ARCADEDB_USER", "root");
-  private static final String PASSWORD  = System.getenv().getOrDefault("ARCADEDB_PASS", "arcadedb");
+  private static final String HOST     = System.getenv().getOrDefault("ARCADEDB_HOST", "localhost");
+  private static final int    PORT     = Integer.parseInt(System.getenv().getOrDefault("ARCADEDB_PORT", "2480"));
+  private static final String DB_NAME  = "Customer360";
+  private static final String USER     = System.getenv().getOrDefault("ARCADEDB_USER", "root");
+  private static final String PASSWORD = System.getenv().getOrDefault("ARCADEDB_PASS", "arcadedb");
 
   public static void main(String[] args) {
-    RemoteGrpcServer server = new RemoteGrpcServer(HOST, GRPC_PORT, USER, PASSWORD, true, List.of());
-
-    try (RemoteGrpcDatabase db = new RemoteGrpcDatabase(server, HOST, GRPC_PORT, HTTP_PORT, DB_NAME, USER, PASSWORD)) {
-      db.setTimeout(60_000);
-
+    try (RemoteDatabase db = new RemoteDatabase(HOST, PORT, DB_NAME, USER, PASSWORD)) {
       tryRun(() -> runQuery1IdentityResolution(db), "Query 1");
       tryRun(() -> runQuery2FuzzyDedup(db), "Query 2");
       tryRun(() -> runQuery3Customer360View(db), "Query 3");
@@ -40,21 +32,22 @@ public class Customer360 {
     }
   }
 
-  // Query 1: Identity Resolution — Transitive Link Discovery (OpenCypher)
-  private static void runQuery1IdentityResolution(RemoteGrpcDatabase db) {
+  // Query 1: Identity Resolution — Transitive Link Discovery (SQL MATCH)
+  private static void runQuery1IdentityResolution(RemoteDatabase db) {
     printHeader("Query 1: Identity Resolution — Transitive Link Discovery",
-        "Find all identifiers belonging to the same person as alice@example.com via gRPC.");
+        "Find all identifiers belonging to the same person as alice@example.com.");
 
-    String cypher = """
-        MATCH (id:Identifier {identifierValue: 'alice@example.com'})
-              -[:OBSERVED_IN]->(session:Session)
-              <-[:OBSERVED_IN]-(other:Identifier)
-        WITH DISTINCT other
-        MATCH (other)-[:OBSERVED_IN*1..3]-(transitive:Identifier)
-        RETURN DISTINCT transitive.identifierType AS type,
-               transitive.identifierValue AS value""";
+    String sql = """
+        SELECT linked.identifierType AS type, linked.identifierValue AS value
+        FROM (
+          MATCH {type: Identifier, where: (identifierValue = 'alice@example.com')}
+                .out('OBSERVED_IN'){}.in('OBSERVED_IN'){}
+                .out('OBSERVED_IN'){}.in('OBSERVED_IN'){}
+                .out('OBSERVED_IN'){}.in('OBSERVED_IN'){as: linked}
+          RETURN DISTINCT linked
+        )""";
 
-    try (ResultSet rs = db.query("opencypher", cypher)) {
+    try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
         System.out.printf("  %-15s | %s%n",
@@ -64,20 +57,19 @@ public class Customer360 {
     }
   }
 
-  // Query 2: Fuzzy Name Matching for Deduplication (SQL)
-  private static void runQuery2FuzzyDedup(RemoteGrpcDatabase db) {
+  // Query 2: Fuzzy Name Matching for Deduplication (OpenCypher)
+  private static void runQuery2FuzzyDedup(RemoteDatabase db) {
     printHeader("Query 2: Fuzzy Deduplication",
         "Find probable duplicate customers by shared phone number.");
 
-    String sql = """
-        SELECT a.id AS id_a, a.name AS name_a,
+    String cypher = """
+        MATCH (a:Customer), (b:Customer)
+        WHERE a.phone = b.phone AND a.id < b.id
+        RETURN a.id AS id_a, a.name AS name_a,
                b.id AS id_b, b.name AS name_b,
-               a.phone AS phone
-        FROM Customer a, Customer b
-        WHERE a.id < b.id
-          AND a.phone = b.phone""";
+               a.phone AS phone""";
 
-    try (ResultSet rs = db.query("SQL", sql)) {
+    try (ResultSet rs = db.query("cypher", cypher)) {
       while (rs.hasNext()) {
         Result r = rs.next();
         System.out.printf("  %-5s %-20s | %-5s %-20s | phone: %s%n",
@@ -91,37 +83,58 @@ public class Customer360 {
   }
 
   // Query 3: Complete Customer 360 View (OpenCypher)
-  private static void runQuery3Customer360View(RemoteGrpcDatabase db) {
+  private static void runQuery3Customer360View(RemoteDatabase db) {
     printHeader("Query 3: Complete Customer 360 View",
         "Unified profile for c1: household, purchases, open tickets, lifetime value.");
 
-    String cypher = """
-        MATCH (c:Customer {id: 'c1'})
-        OPTIONAL MATCH (c)-[:MEMBER_OF]->(h:Household)<-[:MEMBER_OF]-(member:Customer)
-        WHERE member <> c
-        OPTIONAL MATCH (c)-[p:PURCHASED]->(prod:Product)
-        OPTIONAL MATCH (c)-[:OPENED]->(t:Ticket)
-        WHERE t.status = 'open'
-        RETURN c.name AS customer,
-               c.lifetimeValue AS ltv,
-               collect(DISTINCT member.name) AS household_members,
-               collect(DISTINCT prod.name) AS purchased_products,
-               collect(DISTINCT t.subject) AS open_tickets""";
-
-    try (ResultSet rs = db.query("opencypher", cypher)) {
-      while (rs.hasNext()) {
+    // Profile basics
+    try (ResultSet rs = db.query("sql", "SELECT name, lifetimeValue FROM Customer WHERE id = 'c1'")) {
+      if (rs.hasNext()) {
         Result r = rs.next();
-        System.out.printf("  Customer:     %s%n", r.getProperty("customer"));
-        System.out.printf("  LTV:          $%.2f%n", ((Number) r.getProperty("ltv")).doubleValue());
-        System.out.printf("  Household:    %s%n", r.getProperty("household_members"));
-        System.out.printf("  Purchases:    %s%n", r.getProperty("purchased_products"));
-        System.out.printf("  Open tickets: %s%n", r.getProperty("open_tickets"));
+        System.out.println("  Customer:     " + r.getProperty("name"));
+        System.out.printf("  LTV:          $%.2f%n", ((Number) r.getProperty("lifetimeValue")).doubleValue());
       }
     }
+    // Household members
+    System.out.print("  Household:    [");
+    try (ResultSet rs = db.query("cypher",
+        "MATCH (c:Customer {id: 'c1'})-[:MEMBER_OF]->(h:Household)<-[:MEMBER_OF]-(m:Customer) WHERE m <> c RETURN m.name AS name")) {
+      boolean first = true;
+      while (rs.hasNext()) {
+        if (!first) System.out.print(", ");
+        System.out.print((String) rs.next().getProperty("name"));
+        first = false;
+      }
+    }
+    System.out.println("]");
+    // Purchased products
+    System.out.print("  Purchases:    [");
+    try (ResultSet rs = db.query("cypher",
+        "MATCH (c:Customer {id: 'c1'})-[:PURCHASED]->(p:Product) RETURN DISTINCT p.name AS name")) {
+      boolean first = true;
+      while (rs.hasNext()) {
+        if (!first) System.out.print(", ");
+        System.out.print((String) rs.next().getProperty("name"));
+        first = false;
+      }
+    }
+    System.out.println("]");
+    // Open tickets
+    System.out.print("  Open tickets: [");
+    try (ResultSet rs = db.query("cypher",
+        "MATCH (c:Customer {id: 'c1'})-[:OPENED]->(t:Ticket) WHERE t.status = 'open' RETURN t.subject AS subject")) {
+      boolean first = true;
+      while (rs.hasNext()) {
+        if (!first) System.out.print(", ");
+        System.out.print((String) rs.next().getProperty("subject"));
+        first = false;
+      }
+    }
+    System.out.println("]");
   }
 
   // Query 4: Churn Risk Scoring (SQL MATCH)
-  private static void runQuery4ChurnRisk(RemoteGrpcDatabase db) {
+  private static void runQuery4ChurnRisk(RemoteDatabase db) {
     printHeader("Query 4: Churn Risk Scoring",
         "Score active customers by churned-neighbor ratio in their social network.");
 
@@ -138,7 +151,7 @@ public class Customer360 {
         GROUP BY c.id, c.name
         ORDER BY churned_neighbors DESC""";
 
-    try (ResultSet rs = db.query("SQL", sql)) {
+    try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
         System.out.printf("  %-5s %-20s | neighbors: %s | churned: %s%n",
@@ -151,7 +164,7 @@ public class Customer360 {
   }
 
   // Query 5: Cross-Sell via Household & Collaborative Filtering (OpenCypher)
-  private static void runQuery5CrossSell(RemoteGrpcDatabase db) {
+  private static void runQuery5CrossSell(RemoteDatabase db) {
     printHeader("Query 5: Cross-Sell Recommendations",
         "Products for c1 via household member purchases and collaborative filtering.");
 
@@ -167,7 +180,7 @@ public class Customer360 {
                rec.category AS category,
                rec.price AS price""";
 
-    try (ResultSet rs = db.query("opencypher", cypher)) {
+    try (ResultSet rs = db.query("cypher", cypher)) {
       while (rs.hasNext()) {
         Result r = rs.next();
         System.out.printf("  %-20s | %-15s | $%.2f%n",
@@ -179,7 +192,7 @@ public class Customer360 {
   }
 
   // Query 6: Journey Path Analysis (OpenCypher)
-  private static void runQuery6JourneyPath(RemoteGrpcDatabase db) {
+  private static void runQuery6JourneyPath(RemoteDatabase db) {
     printHeader("Query 6: Journey Path Analysis",
         "Most common conversion paths: ad_click -> page_view -> purchase.");
 
@@ -193,7 +206,7 @@ public class Customer360 {
         ORDER BY conversions DESC
         LIMIT 20""";
 
-    try (ResultSet rs = db.query("opencypher", cypher)) {
+    try (ResultSet rs = db.query("cypher", cypher)) {
       while (rs.hasNext()) {
         Result r = rs.next();
         System.out.printf("  %-15s | %-15s | conversions: %s%n",

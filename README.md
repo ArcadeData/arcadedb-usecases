@@ -17,6 +17,7 @@ and runnable demos via both `curl` and a Java program.
 | [social-network-analytics](./social-network-analytics/) | Social network analytics with materialized view dashboards | Materialized views, Graph traversal, Time-series, Polyglot (SQL + OpenCypher) |
 | [supply-chain](./supply-chain/) | Supply chain management with multi-tier visibility | Graph traversal, Vector similarity, Time-series, PostgreSQL protocol, JavaScript |
 | [iam](./iam/) | Identity & Access Management | Graph traversal, Time-series, Vector similarity, PostgreSQL protocol, Python |
+| [customer-360](./customer-360/) | Unified customer view with identity resolution and churn prediction | Graph traversal, Documents, Vectors, Full-text search, OpenCypher |
 
 ## Structure
 
