@@ -81,7 +81,7 @@ Small but sufficient to make every query return meaningful results. Deliberate o
 
 ### Customers (6)
 
-- c1: Alice (active), c2: Bob (active), c3: Carol (active), c4: Dave (churned), c5: Eve (active), c6: Frank (churned)
+- c1: Alice Smith (active), c2: Bob Smith (active), c3: Carol Johnson (active), c4: Dave Johnson (churned), c5: Alicia Smith (active, fuzzy-dedup pair with c1), c6: Frank Wilson (churned)
 - c1 & c2 in Household h1; c3 & c4 in Household h2
 - c4 & c6 churned — neighbors of active customers for churn risk signal
 - Each has prefVector, recentBehavior, baselineBehavior (8D floats)
