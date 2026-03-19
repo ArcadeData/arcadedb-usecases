@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [curl, java, python]
+        runner: [curl, java, python, curl-cypher, java-cypher, python-cypher]
 
     env:
       ARCADEDB_URL: http://localhost:2480
@@ -33,14 +33,14 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Java
-        if: matrix.runner == 'java'
+        if: matrix.runner == 'java' || matrix.runner == 'java-cypher'
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: '21'
           distribution: 'temurin'
 
       - name: Cache Maven repository
-        if: matrix.runner == 'java'
+        if: matrix.runner == 'java' || matrix.runner == 'java-cypher'
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ~/.m2
@@ -48,7 +48,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2-iam-
 
       - name: Set up Python
-        if: matrix.runner == 'python'
+        if: matrix.runner == 'python' || matrix.runner == 'python-cypher'
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: '3.12'
@@ -61,10 +61,23 @@ jobs:
           key: ${{ runner.os }}-pip-iam-${{ hashFiles('iam/python/requirements.txt') }}
           restore-keys: ${{ runner.os }}-pip-iam-
 
+      - name: Cache pip (cypher)
+        if: matrix.runner == 'python-cypher'
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-iam-cypher-${{ hashFiles('iam/python/requirements-cypher.txt') }}
+          restore-keys: ${{ runner.os }}-pip-iam-cypher-
+
       - name: Install Python dependencies
         if: matrix.runner == 'python'
         working-directory: iam/python
         run: pip install -r requirements.txt
+
+      - name: Install Python dependencies (cypher)
+        if: matrix.runner == 'python-cypher'
+        working-directory: iam/python
+        run: pip install -r requirements-cypher.txt
 
       - name: Start ArcadeDB
         working-directory: iam
@@ -79,6 +92,11 @@ jobs:
         working-directory: iam
         run: ./queries/queries.sh
 
+      - name: Run curl queries (OpenCypher)
+        if: matrix.runner == 'curl-cypher'
+        working-directory: iam
+        run: ./queries/queries-cypher.sh
+
       - name: Build and run Java
         if: matrix.runner == 'java'
         working-directory: iam/java
@@ -86,10 +104,22 @@ jobs:
           mvn package --no-transfer-progress
           java -jar target/iam.jar
 
+      - name: Build and run Java (OpenCypher)
+        if: matrix.runner == 'java-cypher'
+        working-directory: iam/java
+        run: |
+          mvn package --no-transfer-progress
+          java -cp target/iam.jar com.arcadedb.examples.IamCypher
+
       - name: Run Python queries
         if: matrix.runner == 'python'
         working-directory: iam/python
         run: python iam.py
+
+      - name: Run Python queries (OpenCypher)
+        if: matrix.runner == 'python-cypher'
+        working-directory: iam/python
+        run: python iam_cypher.py
 
       - name: Teardown
         if: always()
