@@ -7,12 +7,16 @@ and access management system that unifies three signal types in a single databas
 - **Time-series** — access audit logs for compliance reporting
 - **Vector similarity** — behavioral anomaly detection via access pattern embeddings
 
+Each query is implemented twice: once in **ArcadeDB SQL MATCH** and once in
+**OpenCypher**, showing how the same graph problems can be expressed in both
+languages against the same dataset.
+
 ## Prerequisites
 
 - Docker and Docker Compose
 - `curl` and `jq`
-- Java 21+ and Maven 3.x (for the Java demo)
-- Python 3.12+ (for the Python demo)
+- Java 21+ and Maven 3.x (for the Java demos)
+- Python 3.12+ (for the Python demos)
 
 ## Quickstart
 
@@ -22,6 +26,11 @@ and access management system that unifies three signal types in a single databas
 docker compose up -d
 ```
 
+Exposes three protocols:
+- **HTTP API** on port 2480 (curl, `arcadedb-network`)
+- **PostgreSQL wire protocol** on port 5432 (`psycopg`)
+- **Bolt protocol** on port 7687 (`neo4j-java-driver`, `neo4j` Python driver)
+
 ### 2. Create database and load data
 
 ```bash
@@ -30,26 +39,32 @@ docker compose up -d
 
 This creates the `IAM` database, applies the schema, and inserts sample data.
 
-### 3a. Run queries via curl
+### 3. Run queries
+
+#### SQL queries
 
 ```bash
+# curl + jq (HTTP API)
 ./queries/queries.sh
+
+# Java (arcadedb-network HTTP client)
+cd java && mvn package -q && java -jar target/iam.jar
+
+# Python (psycopg — PostgreSQL wire protocol)
+cd python && pip install -r requirements.txt && python iam.py
 ```
 
-### 3b. Run queries via Java
+#### OpenCypher queries
 
 ```bash
-cd java
-mvn package -q
-java -jar target/iam.jar
-```
+# curl + jq (HTTP API with language: "opencypher")
+./queries/queries-cypher.sh
 
-### 3c. Run queries via Python (PostgreSQL wire protocol)
+# Java (neo4j-java-driver — Bolt protocol)
+cd java && mvn package -q && java -cp target/iam.jar com.arcadedb.examples.IamCypher
 
-```bash
-cd python
-pip install -r requirements.txt
-python iam.py
+# Python (neo4j driver — Bolt + psycopg for document/vector queries)
+cd python && pip install -r requirements-cypher.txt && python iam_cypher.py
 ```
 
 ## Schema
@@ -71,15 +86,30 @@ python iam.py
 
 ## Query Patterns
 
-| # | Pattern | Language | Signal Type |
-|---|---------|----------|-------------|
-| 1 | Permission Resolution | SQL MATCH | Graph |
-| 2 | Shadow Admin Detection | SQL MATCH | Graph |
-| 3 | SOX Compliance Audit | SQL MATCH + SQL | Graph + Time-series |
-| 4 | Separation of Duties | SQL MATCH (2-step) | Graph |
-| 5 | Dormant Access Detection | SQL MATCH + SQL | Graph + Time-series |
-| 6 | Behavioral Anomaly | SQL + vectorNeighbors | Vector |
-| 7 | Impact Analysis (What-If) | SQL MATCH | Graph |
+| # | Pattern | SQL | OpenCypher | Signal Type |
+|---|---------|-----|------------|-------------|
+| 1 | Permission Resolution | SQL MATCH | Cypher `*1..3` | Graph |
+| 2 | Shadow Admin Detection | SQL MATCH | Cypher `*1..5` | Graph |
+| 3 | SOX Compliance Audit | SQL MATCH + SQL | Cypher + SQL | Graph + Time-series |
+| 4 | Separation of Duties | SQL MATCH (2-step) | Cypher (2-step) | Graph |
+| 5 | Dormant Access Detection | SQL MATCH + SQL | Cypher + SQL | Graph + Time-series |
+| 6 | Behavioral Anomaly | SQL + vectorNeighbors | SQL (ArcadeDB-only) | Vector |
+| 7 | Impact Analysis (What-If) | SQL MATCH | Cypher | Graph |
+
+Queries 3, 5, and 6 require SQL even in the OpenCypher variant because they
+access `AccessLog` (a document type outside the graph) or use `vectorNeighbors()`
+(an ArcadeDB SQL function with no Cypher equivalent).
+
+## Connectivity Matrix
+
+| Runner | Protocol | Port | Driver |
+|--------|----------|------|--------|
+| `queries.sh` | HTTP API | 2480 | curl |
+| `queries-cypher.sh` | HTTP API | 2480 | curl |
+| `IdentityAccessManagement.java` | HTTP API | 2480 | `arcadedb-network` |
+| `IamCypher.java` | Bolt + HTTP | 7687 + 2480 | `neo4j-java-driver` + `arcadedb-network` |
+| `iam.py` | PostgreSQL wire | 5432 | `psycopg` |
+| `iam_cypher.py` | Bolt + PostgreSQL | 7687 + 5432 | `neo4j` + `psycopg` |
 
 ## Sample Data
 
@@ -99,9 +129,12 @@ python iam.py
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.3.1**. Vector similarity queries use
-`vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR`
-index. The PostgreSQL wire protocol is enabled via the `PostgresProtocolPlugin`.
+This use case targets ArcadeDB **26.3.1**. Key notes:
+
+- Vector similarity queries use `vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR` index
+- The PostgreSQL wire protocol is enabled via `PostgresProtocolPlugin`
+- The Bolt protocol is enabled via `BoltProtocolPlugin` with `-Darcadedb.bolt.defaultDatabase=IAM`
+- Neo4j Java driver 6.0.3 is used for Bolt connectivity
 
 ## Reference
 

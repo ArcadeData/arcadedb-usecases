@@ -4,10 +4,12 @@ services:
     ports:
       - "2480:2480"
       - "5432:5432"
+      - "7687:7687"
     environment:
       JAVA_OPTS: >-
         -Darcadedb.server.rootPassword=arcadedb
-        -Darcadedb.server.plugins=Postgres:com.arcadedb.postgres.PostgresProtocolPlugin
+        -Darcadedb.server.plugins=Postgres:com.arcadedb.postgres.PostgresProtocolPlugin,BoltProtocolPlugin
+        -Darcadedb.bolt.defaultDatabase=IAM
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:2480/api/v1/ready"]
       interval: 5s

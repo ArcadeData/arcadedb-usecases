@@ -14,6 +14,7 @@
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <arcadedb.version>26.3.1</arcadedb.version>
+    <neo4j.driver.version>6.0.3</neo4j.driver.version>
   </properties>
 
   <dependencies>
@@ -21,6 +22,11 @@
       <groupId>com.arcadedb</groupId>
       <artifactId>arcadedb-network</artifactId>
       <version>${arcadedb.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.neo4j.driver</groupId>
+      <artifactId>neo4j-java-driver</artifactId>
+      <version>${neo4j.driver.version}</version>
     </dependency>
   </dependencies>
 
