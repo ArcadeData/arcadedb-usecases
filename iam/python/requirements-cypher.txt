@@ -1,2 +1,2 @@
-neo4j>=5.0,<6
+neo4j>=5.0,<7
 psycopg[binary]>=3.1,<4
