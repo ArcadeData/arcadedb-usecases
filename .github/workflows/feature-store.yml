@@ -58,13 +58,13 @@ jobs:
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-feature-store-${{ hashFiles('feature-store/js/package.json') }}
+          key: ${{ runner.os }}-npm-feature-store-${{ hashFiles('feature-store/js/package-lock.json') }}
           restore-keys: ${{ runner.os }}-npm-feature-store-
 
       - name: Install JS dependencies
         if: matrix.runner == 'js'
         working-directory: feature-store/js
-        run: npm install
+        run: npm ci
 
       - name: Start ArcadeDB
         working-directory: feature-store

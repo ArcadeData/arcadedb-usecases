@@ -47,13 +47,13 @@ async function runQuery2(client) {
     'Find shortest path from a4 to nearest flagged account via transfers.');
 
   const sql = `
-    SELECT flaggedId, depth
+    SELECT accountId AS flaggedId, depth
     FROM (
       MATCH {type: Account, where: (accountId = 'a4')}
             .both('TRANSFERRED'){while: ($depth < 4), as: hop}
-            {type: Account, where: (flagged = true), as: flagged}
-      RETURN flagged.accountId AS flaggedId, $depth AS depth
+      RETURN hop.accountId AS accountId, hop.flagged AS flagged, $depth AS depth
     )
+    WHERE flagged = true
     ORDER BY depth ASC
     LIMIT 1`;
 
@@ -159,10 +159,10 @@ async function runQuery7(client) {
   }
 }
 
-// ── Query 8: Personalized Ranking (Cypher via {cypher} prefix) ──────────────
+// ── Query 8: Category Vector Search (SQL) ───────────────────────────────────
 async function runQuery8(client) {
-  printHeader('Query 8: Personalized Ranking (SQL)',
-    'Rank Electronics products for u1 by preference vector similarity.');
+  printHeader('Query 8: Category Vector Search (SQL)',
+    'Rank Electronics products by similarity to u1 preference [0.9,0.1,0.1,0.1].');
 
   const sql = `
     SELECT name, price
@@ -183,17 +183,19 @@ async function runQuery9(client) {
     'Find all downstream equipment affected if eq1 fails.');
 
   const sql = `
-    SELECT name, failureRate, criticality
+    SELECT name, failureRate, criticality, depth
     FROM (
       MATCH {type: Equipment, where: (equipmentId = 'eq1')}
-            .in('DEPENDS_ON'){as: dep}
+            .inE('DEPENDS_ON'){while: ($depth < 5), as: e}
+            .outV(){as: dep}
       RETURN dep.name AS name, dep.failureRate AS failureRate,
-             dep.out('DEPENDS_ON')[0].criticality AS criticality
-    )`;
+             e.criticality AS criticality, $depth AS depth
+    )
+    ORDER BY depth ASC`;
 
   const res = await client.query(sql);
   for (const row of res.rows) {
-    console.log(`  ${String(row.name).padEnd(20)} | failureRate: ${row.failurerate} | criticality: ${row.criticality}`);
+    console.log(`  ${String(row.name).padEnd(20)} | failureRate: ${row.failurerate} | criticality: ${row.criticality} | depth: ${row.depth}`);
   }
 }
 

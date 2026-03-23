@@ -24,7 +24,7 @@ public class FeatureStore {
       System.out.println("\n========== RECOMMENDATION DOMAIN ==========");
       tryRun(() -> runQuery6CollaborativeFiltering(db), "Query 6");
       tryRun(() -> runQuery7ProductEmbeddingSearch(db), "Query 7");
-      tryRun(() -> runQuery8PersonalizedRanking(db), "Query 8");
+      tryRun(() -> runQuery8CategoryVectorSearch(db), "Query 8");
 
       System.out.println("\n========== MAINTENANCE DOMAIN ==========");
       tryRun(() -> runQuery9EquipmentDependencyChain(db), "Query 9");
@@ -76,13 +76,13 @@ public class FeatureStore {
 
     String sql =
         """
-            SELECT flaggedId, depth
+            SELECT accountId AS flaggedId, depth
             FROM (
               MATCH {type: Account, where: (accountId = 'a4')}
                     .both('TRANSFERRED'){while: ($depth < 4), as: hop}
-                    {type: Account, where: (flagged = true), as: flagged}
-              RETURN flagged.accountId AS flaggedId, $depth AS depth
+              RETURN hop.accountId AS accountId, hop.flagged AS flagged, $depth AS depth
             )
+            WHERE flagged = true
             ORDER BY depth ASC
             LIMIT 1""";
 
@@ -215,10 +215,10 @@ public class FeatureStore {
     }
   }
 
-  // ── Query 8: Personalized Ranking (SQL) ────────────────────────────────────
-  private static void runQuery8PersonalizedRanking(RemoteDatabase db) {
-    printHeader("Query 8: Personalized Ranking (SQL)",
-        "Rank Electronics products for u1 by preference vector similarity.");
+  // ── Query 8: Category Vector Search (SQL) ───────────────────────────────────
+  private static void runQuery8CategoryVectorSearch(RemoteDatabase db) {
+    printHeader("Query 8: Category Vector Search (SQL)",
+        "Rank Electronics products by similarity to u1 preference [0.9,0.1,0.1,0.1].");
 
     String sql =
         """
@@ -245,20 +245,23 @@ public class FeatureStore {
 
     String sql =
         """
-            SELECT name, failureRate, criticality
+            SELECT name, failureRate, criticality, depth
             FROM (
               MATCH {type: Equipment, where: (equipmentId = 'eq1')}
-                    .in('DEPENDS_ON'){as: dep}
+                    .inE('DEPENDS_ON'){while: ($depth < 5), as: e}
+                    .outV(){as: dep}
               RETURN dep.name AS name, dep.failureRate AS failureRate,
-                     dep.out('DEPENDS_ON')[0].criticality AS criticality
-            )""";
+                     e.criticality AS criticality, $depth AS depth
+            )
+            ORDER BY depth ASC""";
 
     try (ResultSet rs = db.query("sql", sql)) {
       while (rs.hasNext()) {
         Result r = rs.next();
         System.out.println("  " + r.getProperty("name")
             + " | failureRate: " + r.getProperty("failureRate")
-            + " | criticality: " + r.getProperty("criticality"));
+            + " | criticality: " + r.getProperty("criticality")
+            + " | depth: " + r.getProperty("depth"));
       }
     }
   }

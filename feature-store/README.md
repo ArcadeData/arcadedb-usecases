@@ -87,7 +87,7 @@ node feature-store.js
 | 5 | Shared Device Network | Cypher | Graph | Fraud |
 | 6 | Collaborative Filtering | Cypher | Graph | Recommendations |
 | 7 | Product Embedding Search | SQL + vectorNeighbors | Vector | Recommendations |
-| 8 | Personalized Ranking | SQL + vectorNeighbors | Vector | Recommendations |
+| 8 | Category Vector Search | SQL + vectorNeighbors | Vector | Recommendations |
 | 9 | Equipment Dependency Chain | SQL MATCH | Graph | Maintenance |
 | 10 | Sensor Anomaly Detection | SQL | Time-series | Maintenance |
 | 11 | Feature Vector Assembly | SQL (multi-step) | All | Cross-domain |

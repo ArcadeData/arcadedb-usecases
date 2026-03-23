@@ -21,7 +21,7 @@ query() {
     | jq '.result'
 }
 
-command() {
+send_command() {
   local lang="$1" cmd="$2"
   jq -cn --arg l "$lang" --arg c "$cmd" '{"language":$l,"command":$c}' \
     | curl -sf -u "$AUTH" -X POST "$COMMAND_URL" \
@@ -51,13 +51,13 @@ echo "=== Query 2: Distance to Flagged Account (SQL MATCH) ==="
 echo "Find shortest path from a4 to nearest flagged account via transfers."
 echo ""
 query "sql" "
-SELECT flaggedId, depth
+SELECT accountId AS flaggedId, depth
 FROM (
   MATCH {type: Account, where: (accountId = 'a4')}
         .both('TRANSFERRED'){while: (\$depth < 4), as: hop}
-        {type: Account, where: (flagged = true), as: flagged}
-  RETURN flagged.accountId AS flaggedId, \$depth AS depth
+  RETURN hop.accountId AS accountId, hop.flagged AS flagged, \$depth AS depth
 )
+WHERE flagged = true
 ORDER BY depth ASC
 LIMIT 1
 "
@@ -134,8 +134,8 @@ LIMIT 5
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Query 8: Personalized Ranking (SQL) ==="
-echo "Rank Electronics products for u1 by preference vector similarity."
+echo "=== Query 8: Category Vector Search (SQL) ==="
+echo "Rank Electronics products by similarity to u1 preference [0.9,0.1,0.1,0.1]."
 echo ""
 query "sql" "
 SELECT name, price
@@ -153,13 +153,15 @@ echo "=== Query 9: Equipment Dependency Chain (SQL MATCH) ==="
 echo "Find all downstream equipment affected if eq1 fails."
 echo ""
 query "sql" "
-SELECT name, failureRate, criticality
+SELECT name, failureRate, criticality, depth
 FROM (
   MATCH {type: Equipment, where: (equipmentId = 'eq1')}
-        .in('DEPENDS_ON'){as: dep}
+        .inE('DEPENDS_ON'){while: (\$depth < 5), as: e}
+        .outV(){as: dep}
   RETURN dep.name AS name, dep.failureRate AS failureRate,
-         dep.out('DEPENDS_ON')[0].criticality AS criticality
+         e.criticality AS criticality, \$depth AS depth
 )
+ORDER BY depth ASC
 "
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -217,7 +219,7 @@ WHERE accountId = 'a4'
 
 echo ""
 echo "--- Step 4: Store feature snapshot ---"
-command "sql" "
+send_command "sql" "
 INSERT INTO FeatureSnapshot SET entityId = 'a4', entityType = 'Account',
   featureVector = [8, 6, 3, 67, 145000, 0.87],
   computedAt = '2026-03-23 00:00:00', modelVersion = 'fraud-v2.2'
