@@ -1,0 +1,10 @@
+{
+  "name": "feature-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ArcadeDB Feature Store queries via PostgreSQL protocol",
+  "main": "feature-store.js",
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}
