@@ -1,0 +1,97 @@
+name: Feature Store CI
+
+on:
+  push:
+    paths:
+      - feature-store/**
+      - .github/workflows/feature-store.yml
+  pull_request:
+    paths:
+      - feature-store/**
+      - .github/workflows/feature-store.yml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [curl, java, js]
+
+    env:
+      ARCADEDB_URL: http://localhost:2480
+      ARCADEDB_USER: root
+      ARCADEDB_PASS: arcadedb
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Java
+        if: matrix.runner == 'java'
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven repository
+        if: matrix.runner == 'java'
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-feature-store-${{ hashFiles('feature-store/java/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-feature-store-
+
+      - name: Set up Node.js
+        if: matrix.runner == 'js'
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '22'
+
+      - name: Cache npm
+        if: matrix.runner == 'js'
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-feature-store-${{ hashFiles('feature-store/js/package.json') }}
+          restore-keys: ${{ runner.os }}-npm-feature-store-
+
+      - name: Install JS dependencies
+        if: matrix.runner == 'js'
+        working-directory: feature-store/js
+        run: npm install
+
+      - name: Start ArcadeDB
+        working-directory: feature-store
+        run: docker compose up -d
+
+      - name: Setup database
+        working-directory: feature-store
+        run: ./setup.sh
+
+      - name: Run curl queries
+        if: matrix.runner == 'curl'
+        working-directory: feature-store
+        run: ./queries/queries.sh
+
+      - name: Build and run Java
+        if: matrix.runner == 'java'
+        working-directory: feature-store/java
+        run: |
+          mvn package --no-transfer-progress
+          java -jar target/feature-store.jar
+
+      - name: Run JavaScript queries
+        if: matrix.runner == 'js'
+        working-directory: feature-store/js
+        run: node feature-store.js
+
+      - name: Teardown
+        if: always()
+        working-directory: feature-store
+        run: docker compose down

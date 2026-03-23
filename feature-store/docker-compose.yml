@@ -1,0 +1,16 @@
+services:
+  arcadedb:
+    image: arcadedata/arcadedb:26.3.2
+    ports:
+      - "2480:2480"
+      - "5432:5432"
+    environment:
+      JAVA_OPTS: >-
+        -Darcadedb.server.rootPassword=arcadedb
+        -Darcadedb.server.plugins=Postgres:com.arcadedb.postgres.PostgresProtocolPlugin
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:2480/api/v1/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s

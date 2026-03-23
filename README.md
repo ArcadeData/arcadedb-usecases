@@ -18,6 +18,7 @@ and runnable demos via both `curl` and a Java program.
 | [supply-chain](./supply-chain/) | Supply chain management with multi-tier visibility | Graph traversal, Vector similarity, Time-series, PostgreSQL protocol, JavaScript |
 | [iam](./iam/) | Identity & Access Management | Graph traversal, Time-series, Vector similarity, PostgreSQL protocol, Python |
 | [customer-360](./customer-360/) | Unified customer view with identity resolution and churn prediction | Graph traversal, Documents, Vectors, Full-text search, OpenCypher |
+| [feature-store](./feature-store/) | Unified ML feature store for fraud, recommendations, and maintenance | Graph traversal, Vector similarity, Time-series, PostgreSQL protocol, JavaScript |
 
 ## Structure
 

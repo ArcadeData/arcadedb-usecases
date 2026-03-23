@@ -279,3 +279,40 @@ updates:
       arcadedb-docker:
         patterns:
           - "arcadedata/arcadedb"
+
+  # ── Feature Store ──────────────────────────────────────────────────────────
+  - package-ecosystem: "maven"
+    directory: "/feature-store/java"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 20
+    groups:
+      arcadedb:
+        patterns:
+          - "com.arcadedb:*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+
+  - package-ecosystem: "npm"
+    directory: "/feature-store/js"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      node-pg:
+        patterns:
+          - "pg"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/feature-store"
+    schedule:
+      interval: weekly
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      arcadedb-docker:
+        patterns:
+          - "arcadedata/arcadedb"
