@@ -12,7 +12,7 @@ services:
       retries: 20
       start_period: 10s
   grafana:
-    image: grafana/grafana-oss:12.4.2
+    image: grafana/grafana-oss:13.0.1
     ports:
       - "3000:3000"
     environment:
