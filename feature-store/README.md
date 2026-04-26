@@ -126,7 +126,7 @@ The JavaScript module uses the `{cypher}` prefix for Cypher queries over Postgre
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.3.2**. Vector similarity queries use
+This use case targets ArcadeDB **26.4.2**. Vector similarity queries use
 `vectorNeighbors('TypeName[property]', vector, k)` with an `LSM_VECTOR`
 index.
 

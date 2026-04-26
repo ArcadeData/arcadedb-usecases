@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-23
 **Branch:** feat/feature-store
-**ArcadeDB version:** 26.3.2
+**ArcadeDB version:** 26.4.2
 
 ## Overview
 
@@ -40,7 +40,7 @@ feature-store/
 
 ## Docker Compose
 
-- Single service: `arcadedata/arcadedb:26.3.2`
+- Single service: `arcadedata/arcadedb:26.4.2`
 - HTTP API port: `2480` (shell scripts + Java)
 - PostgreSQL protocol port: `5432` (JavaScript)
 - PostgreSQL plugin enabled via `JAVA_OPTS`

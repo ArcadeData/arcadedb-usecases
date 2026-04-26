@@ -4,9 +4,9 @@
 
 **Goal:** Build a fully self-contained `feature-store/` directory demonstrating ArcadeDB as a unified ML feature store serving three domains (fraud, recommendations, maintenance) via 11 query patterns, runnable with `curl`, Java, and JavaScript (PostgreSQL protocol).
 
-**Architecture:** Self-contained directory per the design doc. Docker Compose brings up ArcadeDB 26.3.2 with PostgreSQL plugin. A `setup.sh` creates the database and applies SQL files. Eleven queries are demonstrated via `queries/queries.sh` (curl), `java/` (Maven fat JAR using `arcadedb-network`), and `js/` (Node.js using `pg` driver).
+**Architecture:** Self-contained directory per the design doc. Docker Compose brings up ArcadeDB 26.4.2 with PostgreSQL plugin. A `setup.sh` creates the database and applies SQL files. Eleven queries are demonstrated via `queries/queries.sh` (curl), `java/` (Maven fat JAR using `arcadedb-network`), and `js/` (Node.js using `pg` driver).
 
-**Tech Stack:** ArcadeDB 26.3.2, Docker Compose, Maven 3.x, Java 21, `com.arcadedb:arcadedb-network:26.3.2`, Node.js 22, `pg` npm package, `jq` (for setup/query scripts)
+**Tech Stack:** ArcadeDB 26.4.2, Docker Compose, Maven 3.x, Java 21, `com.arcadedb:arcadedb-network:26.4.2`, Node.js 22, `pg` npm package, `jq` (for setup/query scripts)
 
 ---
 
@@ -53,7 +53,7 @@ git commit -m "chore: scaffold feature-store directory structure"
 ```yaml
 services:
   arcadedb:
-    image: arcadedata/arcadedb:26.3.2
+    image: arcadedata/arcadedb:26.4.2
     ports:
       - "2480:2480"
       - "5432:5432"
@@ -723,7 +723,7 @@ git commit -m "feat(feature-store): add 11 curl query demonstrations"
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <arcadedb.version>26.3.2</arcadedb.version>
+    <arcadedb.version>26.4.2</arcadedb.version>
   </properties>
 
   <dependencies>
