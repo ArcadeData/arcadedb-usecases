@@ -1,2 +1,2 @@
 neo4j>=6.1.0,<7
-psycopg[binary]>=3.3.3,<4
+psycopg[binary]>=3.3.4,<4
