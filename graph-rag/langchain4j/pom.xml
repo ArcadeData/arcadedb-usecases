@@ -13,8 +13,8 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <langchain4j.version>1.15.0</langchain4j.version>
-    <langchain4j.community.version>1.15.0-beta25</langchain4j.community.version>
+    <langchain4j.version>1.15.1</langchain4j.version>
+    <langchain4j.community.version>1.15.1-beta25</langchain4j.community.version>
     <neo4j.driver.version>6.1.0</neo4j.driver.version>
   </properties>
 
