@@ -17,7 +17,18 @@ updates:
 
   # ── Maven ────────────────────────────────────────────────────────────────────
   - package-ecosystem: "maven"
-    directory: "/recommendation-engine/java"
+    directories:
+      - "/recommendation-engine/java"
+      - "/knowledge-graphs/java"
+      - "/graph-rag/java"
+      - "/graph-rag/langchain4j"
+      - "/fraud-detection/java"
+      - "/realtime-analytics/java"
+      - "/supply-chain/java"
+      - "/iam/java"
+      - "/customer-360/java"
+      - "/social-network-analytics/java"
+      - "/feature-store/java"
     schedule:
       interval: weekly
       day: "sunday"
@@ -26,45 +37,9 @@ updates:
       arcadedb:
         patterns:
           - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "maven"
-    directory: "/knowledge-graphs/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
-      arcadedb:
-        patterns:
-          - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "maven"
-    directory: "/graph-rag/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
       neo4j:
         patterns:
           - "org.neo4j.driver:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "maven"
-    directory: "/graph-rag/langchain4j"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
       langchain4j:
         patterns:
           - "dev.langchain4j:*"
@@ -72,93 +47,11 @@ updates:
         patterns:
           - "org.apache.maven.plugins:*"
 
-  - package-ecosystem: "maven"
-    directory: "/fraud-detection/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
-      arcadedb:
-        patterns:
-          - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "maven"
-    directory: "/realtime-analytics/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
-      arcadedb:
-        patterns:
-          - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "maven"
-    directory: "/supply-chain/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
-      arcadedb:
-        patterns:
-          - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "maven"
-    directory: "/iam/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
-      arcadedb:
-        patterns:
-          - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "maven"
-    directory: "/customer-360/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
-      arcadedb:
-        patterns:
-          - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "maven"
-    directory: "/social-network-analytics/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
-      arcadedb:
-        patterns:
-          - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  # ── npm ────────────────────────────────────────────────────────────────────
+  # ── npm ──────────────────────────────────────────────────────────────────────
   - package-ecosystem: "npm"
-    directory: "/supply-chain/js"
+    directories:
+      - "/supply-chain/js"
+      - "/feature-store/js"
     schedule:
       interval: weekly
       day: "sunday"
@@ -180,134 +73,19 @@ updates:
         patterns:
           - "psycopg*"
 
-  # ── Docker Compose ──────────────────────────────────────────────────────────
+  # ── Docker Compose ───────────────────────────────────────────────────────────
   - package-ecosystem: "docker-compose"
-    directory: "/recommendation-engine"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/knowledge-graphs"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/graph-rag"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/fraud-detection"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/realtime-analytics"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/supply-chain"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/iam"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/customer-360"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/social-network-analytics"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      arcadedb-docker:
-        patterns:
-          - "arcadedata/arcadedb"
-
-  # ── Feature Store ──────────────────────────────────────────────────────────
-  - package-ecosystem: "maven"
-    directory: "/feature-store/java"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 20
-    groups:
-      arcadedb:
-        patterns:
-          - "com.arcadedb:*"
-      maven-plugins:
-        patterns:
-          - "org.apache.maven.plugins:*"
-
-  - package-ecosystem: "npm"
-    directory: "/feature-store/js"
-    schedule:
-      interval: weekly
-      day: "sunday"
-    open-pull-requests-limit: 10
-    groups:
-      node-pg:
-        patterns:
-          - "pg"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/feature-store"
+    directories:
+      - "/recommendation-engine"
+      - "/knowledge-graphs"
+      - "/graph-rag"
+      - "/fraud-detection"
+      - "/realtime-analytics"
+      - "/supply-chain"
+      - "/iam"
+      - "/customer-360"
+      - "/social-network-analytics"
+      - "/feature-store"
     schedule:
       interval: weekly
       day: "sunday"
