@@ -5,6 +5,6 @@
   "description": "ArcadeDB Feature Store queries via PostgreSQL protocol",
   "main": "feature-store.js",
   "dependencies": {
-    "pg": "^8.21.0"
+    "pg": "^8.22.0"
   }
 }
