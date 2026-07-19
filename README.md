@@ -7,18 +7,18 @@ and runnable demos via both `curl` and a Java program.
 
 ## Use Cases
 
-| Directory | Description | ArcadeDB features |
-|-----------|-------------|-------------------|
-| [recommendation-engine](./recommendation-engine/) | Intelligent product and content recommendations | Graph traversal, Vector similarity, Time-series |
-| [knowledge-graphs](./knowledge-graphs/) | Academic research knowledge graph with co-authorship and citation networks | Graph traversal, Vector similarity, Full-text search, Time-series |
-| [graph-rag](./graph-rag/) | Graph RAG system combining knowledge graphs with vector search for retrieval-augmented generation | Graph traversal, Vector similarity, Full-text indexing, Neo4j Bolt, LangChain4j |
-| [fraud-detection](./fraud-detection/) | Fraud detection system unifying graph, vector, and time-series signals | Graph traversal, Vector similarity, Time-series, Cypher |
-| [realtime-analytics](./realtime-analytics/) | Unified IoT and service monitoring platform | Time-series, Graph traversal, Cypher |
-| [social-network-analytics](./social-network-analytics/) | Social network analytics with materialized view dashboards | Materialized views, Graph traversal, Time-series, Polyglot (SQL + OpenCypher) |
-| [supply-chain](./supply-chain/) | Supply chain management with multi-tier visibility | Graph traversal, Vector similarity, Time-series, PostgreSQL protocol, JavaScript |
-| [iam](./iam/) | Identity & Access Management | Graph traversal, Time-series, Vector similarity, PostgreSQL protocol, Python |
-| [customer-360](./customer-360/) | Unified customer view with identity resolution and churn prediction | Graph traversal, Documents, Vectors, Full-text search, OpenCypher |
-| [feature-store](./feature-store/) | Unified ML feature store for fraud, recommendations, and maintenance | Graph traversal, Vector similarity, Time-series, PostgreSQL protocol, JavaScript |
+| Directory | Status | Description | ArcadeDB features |
+|-----------|--------|-------------|-------------------|
+| [recommendation-engine](./recommendation-engine/) | [![recommendation-engine](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/recommendation-engine.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/recommendation-engine.yml) | Intelligent product and content recommendations | Graph traversal, Vector similarity, Time-series |
+| [knowledge-graphs](./knowledge-graphs/) | [![knowledge-graphs](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/knowledge-graphs.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/knowledge-graphs.yml) | Academic research knowledge graph with co-authorship and citation networks | Graph traversal, Vector similarity, Full-text search, Time-series |
+| [graph-rag](./graph-rag/) | [![graph-rag](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/graph-rag.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/graph-rag.yml) | Graph RAG system combining knowledge graphs with vector search for retrieval-augmented generation | Graph traversal, Vector similarity, Full-text indexing, Neo4j Bolt, LangChain4j |
+| [fraud-detection](./fraud-detection/) | [![fraud-detection](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/fraud-detection.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/fraud-detection.yml) | Fraud detection system unifying graph, vector, and time-series signals | Graph traversal, Vector similarity, Time-series, Cypher |
+| [realtime-analytics](./realtime-analytics/) | [![realtime-analytics](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/realtime-analytics.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/realtime-analytics.yml) | Unified IoT and service monitoring platform | Time-series, Graph traversal, Cypher |
+| [social-network-analytics](./social-network-analytics/) | [![social-network-analytics](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/social-network-analytics.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/social-network-analytics.yml) | Social network analytics with materialized view dashboards | Materialized views, Graph traversal, Time-series, Polyglot (SQL + OpenCypher) |
+| [supply-chain](./supply-chain/) | [![supply-chain](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/supply-chain.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/supply-chain.yml) | Supply chain management with multi-tier visibility | Graph traversal, Vector similarity, Time-series, PostgreSQL protocol, JavaScript |
+| [iam](./iam/) | [![iam](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/iam.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/iam.yml) | Identity & Access Management | Graph traversal, Time-series, Vector similarity, PostgreSQL protocol, Python |
+| [customer-360](./customer-360/) | [![customer-360](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/customer-360.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/customer-360.yml) | Unified customer view with identity resolution and churn prediction | Graph traversal, Documents, Vectors, Full-text search, OpenCypher |
+| [feature-store](./feature-store/) | [![feature-store](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/feature-store.yml/badge.svg)](https://github.com/ArcadeData/arcadedb-usecases/actions/workflows/feature-store.yml) | Unified ML feature store for fraud, recommendations, and maintenance | Graph traversal, Vector similarity, Time-series, PostgreSQL protocol, JavaScript |
 
 ## Structure
 
