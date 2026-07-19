@@ -1,6 +1,7 @@
 name: Customer 360 CI
 
 on:
+  workflow_call:
   push:
     paths:
       - customer-360/**

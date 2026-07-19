@@ -1,6 +1,7 @@
 name: Supply Chain CI
 
 on:
+  workflow_call:
   push:
     paths:
       - supply-chain/**

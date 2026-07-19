@@ -1,0 +1,41 @@
+name: All Modules CI
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly full run, Mondays 04:00 UTC
+    - cron: "0 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  customer-360:
+    uses: ./.github/workflows/customer-360.yml
+
+  feature-store:
+    uses: ./.github/workflows/feature-store.yml
+
+  fraud-detection:
+    uses: ./.github/workflows/fraud-detection.yml
+
+  graph-rag:
+    uses: ./.github/workflows/graph-rag.yml
+
+  iam:
+    uses: ./.github/workflows/iam.yml
+
+  knowledge-graphs:
+    uses: ./.github/workflows/knowledge-graphs.yml
+
+  realtime-analytics:
+    uses: ./.github/workflows/realtime-analytics.yml
+
+  recommendation-engine:
+    uses: ./.github/workflows/recommendation-engine.yml
+
+  social-network-analytics:
+    uses: ./.github/workflows/social-network-analytics.yml
+
+  supply-chain:
+    uses: ./.github/workflows/supply-chain.yml
