@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: all-modules-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   customer-360:
     uses: ./.github/workflows/customer-360.yml
