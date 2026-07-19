@@ -1,6 +1,7 @@
 name: Fraud Detection CI
 
 on:
+  workflow_call:
   push:
     paths:
       - fraud-detection/**

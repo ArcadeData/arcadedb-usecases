@@ -1,6 +1,7 @@
 name: Realtime Analytics CI
 
 on:
+  workflow_call:
   push:
     paths:
       - realtime-analytics/**

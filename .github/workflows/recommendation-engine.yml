@@ -1,6 +1,7 @@
 name: Recommendation Engine CI
 
 on:
+  workflow_call:
   push:
     paths:
       - recommendation-engine/**

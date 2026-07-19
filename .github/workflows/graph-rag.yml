@@ -1,6 +1,7 @@
 name: Graph RAG CI
 
 on:
+  workflow_call:
   push:
     paths:
       - graph-rag/**

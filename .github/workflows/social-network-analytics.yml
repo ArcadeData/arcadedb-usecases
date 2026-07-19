@@ -1,6 +1,7 @@
 name: Social Network Analytics CI
 
 on:
+  workflow_call:
   push:
     paths:
       - social-network-analytics/**
