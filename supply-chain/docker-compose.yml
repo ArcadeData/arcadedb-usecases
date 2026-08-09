@@ -1,6 +1,6 @@
 services:
   arcadedb:
-    image: arcadedata/arcadedb:26.7.3
+    image: arcadedata/arcadedb:26.8.1
     ports:
       - "2480:2480"
       - "5432:5432"
