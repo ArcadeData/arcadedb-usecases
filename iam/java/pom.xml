@@ -13,7 +13,7 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <arcadedb.version>26.7.3</arcadedb.version>
+    <arcadedb.version>26.8.1</arcadedb.version>
     <neo4j.driver.version>6.2.1</neo4j.driver.version>
   </properties>
 
