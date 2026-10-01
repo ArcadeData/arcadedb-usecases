@@ -122,7 +122,7 @@ Action SHAs are pinned. Use `--no-transfer-progress` for Maven in CI.
 - Commit style: `feat(<scope>):`, `fix(<scope>):`, `ci:`, `docs:`, `chore:`
 - Each use case is developed on its own feature branch and merged via PR
 - Dependabot configured for Docker and Maven dependency updates
-- Mergify configured for automated merges
+- Dependabot PRs auto-merge on approval via `.github/workflows/dependabot-auto-merge.yml`
 - Pre-commit hooks are configured (`.pre-commit-config.yaml`)
 
 ## Plans & Documentation

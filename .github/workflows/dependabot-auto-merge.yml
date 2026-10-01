@@ -1,0 +1,66 @@
+# Merges a Dependabot pull request once someone has approved it.
+#
+# This replaces the single rule .mergify.yml used to carry. That rule stamped `[skip ci]` on the
+# merge commit through the merge action's `commit_message_template`, which Mergify deprecated with
+# a 2026-09-30 deadline, and its replacement `commit_message_format` has nowhere to put arbitrary
+# text.
+#
+# Merging from a workflow gets the same effect without the commit-message hack: a push made with
+# the repository's GITHUB_TOKEN starts no workflow run at all, so main's push-triggered jobs stay
+# quiet on a Dependabot merge exactly as they did under `[skip ci]`. The marker is kept in the
+# subject anyway: it says out loud what the merge is doing, and it is what would carry the
+# behaviour if this ever has to merge with a PAT or an App token instead.
+name: Dependabot auto-merge
+
+on:
+  pull_request_review:
+    types: [ submitted ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    # The Mergify conditions this reproduces: `author=dependabot[bot]` and
+    # `#approved-reviews-by>=1`. There is deliberately no green-CI condition, as there was none
+    # before. The actor here is the human who approved, not dependabot[bot], so this run gets a
+    # writable GITHUB_TOKEN rather than the read-only one Dependabot-triggered workflows get.
+    if: >-
+      github.event.review.state == 'approved' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Decide whether this PR may be merged unattended
+        id: guard
+        run: |
+          set -euo pipefail
+          gh pr view "$PR" -R "$GITHUB_REPOSITORY" --json mergeable,headRefOid > pr.json
+          # The merge is pinned to the head read here. Dependabot force-pushes the same branch when
+          # a grouped update gains a member, so a head that moved fails the run instead of merging
+          # a commit nobody approved.
+          echo "head=$(jq -r '.headRefOid' pr.json)" >> "$GITHUB_OUTPUT"
+          if [ "$(jq -r '.mergeable' pr.json)" = "CONFLICTING" ]; then
+            echo "PR is in conflict with main. Leaving it open for Dependabot to rebase."
+            echo "merge=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "merge=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Merge
+        if: steps.guard.outputs.merge == 'true'
+        env:
+          # Through the environment, never interpolated into the script: a pull request title is
+          # attacker-controlled text, and `${{ }}` would splice it straight into the shell.
+          TITLE: ${{ github.event.pull_request.title }}
+          HEAD_SHA: ${{ steps.guard.outputs.head }}
+        run: |
+          set -euo pipefail
+          gh pr view "$PR" -R "$GITHUB_REPOSITORY" --json body --jq '.body' |
+            gh pr merge "$PR" -R "$GITHUB_REPOSITORY" --merge \
+              --match-head-commit "$HEAD_SHA" \
+              --subject "$TITLE (#$PR) [skip ci]" --body-file -
