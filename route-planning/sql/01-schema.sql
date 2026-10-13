@@ -1,0 +1,10 @@
+-- Junctions: the 1,070,376 nodes of the DIMACS Florida road graph, with WGS84 coordinates for A*
+CREATE VERTEX TYPE Junction IF NOT EXISTS;
+CREATE PROPERTY Junction.id IF NOT EXISTS INTEGER;
+CREATE PROPERTY Junction.lat IF NOT EXISTS DOUBLE;
+CREATE PROPERTY Junction.lon IF NOT EXISTS DOUBLE;
+CREATE PROPERTY Junction.name IF NOT EXISTS STRING;
+-- Roads: the 2,712,798 directed road segments, each with its length and its travel time
+CREATE EDGE TYPE ROAD IF NOT EXISTS;
+CREATE PROPERTY ROAD.km IF NOT EXISTS DOUBLE;
+CREATE PROPERTY ROAD.minutes IF NOT EXISTS DOUBLE;
