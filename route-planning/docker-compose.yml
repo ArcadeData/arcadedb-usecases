@@ -1,0 +1,17 @@
+services:
+  arcadedb:
+    # Customizable Contraction Hierarchies ship starting with ArcadeDB 26.10.2
+    image: arcadedata/arcadedb:26.10.2
+    ports:
+      - "2480:2480"
+    environment:
+      # the batch load of the Florida road network is a 150 MB request: above the 100 MB default
+      JAVA_OPTS: >-
+        -Darcadedb.server.rootPassword=arcadedb
+        -Darcadedb.server.httpBodyContentMaxSize=268435456
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:2480/api/v1/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s

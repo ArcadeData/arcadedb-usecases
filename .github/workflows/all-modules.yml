@@ -38,6 +38,9 @@ jobs:
   recommendation-engine:
     uses: ./.github/workflows/recommendation-engine.yml
 
+  route-planning:
+    uses: ./.github/workflows/route-planning.yml
+
   social-network-analytics:
     uses: ./.github/workflows/social-network-analytics.yml
 
