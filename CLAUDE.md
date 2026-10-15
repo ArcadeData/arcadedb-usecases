@@ -17,7 +17,7 @@ A collection of self-contained projects demonstrating [ArcadeDB](https://arcaded
 | `supply-chain/` | `SupplyChain` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`pg`) |
 | `iam/` | `IAM` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`psycopg`) |
 | `feature-store/` | `FeatureStore` | 26.4.2 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`pg`) |
-| `route-planning/` | `RoutePlanning` | 26.10.2 (server) / 26.10.1 (client) | 21 | HTTP API (`arcadedb-network`) + batch endpoint; `embedded/` single-file GraphBatch loader |
+| `route-planning/` | `RoutePlanning` | 26.10.2 | 21 | HTTP API (`arcadedb-network`) + batch endpoint; `embedded/` single-file GraphBatch loader |
 
 ## Directory Structure (per use case)
 

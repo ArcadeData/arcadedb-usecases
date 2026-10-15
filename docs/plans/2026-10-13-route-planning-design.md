@@ -3,7 +3,7 @@
 **Date:** 2026-10-13
 **Branch:** `feat/route-planning`
 **Database:** `RoutePlanning`
-**ArcadeDB Version:** 26.10.2 server (the first release with Customizable Contraction Hierarchies), 26.10.1 client
+**ArcadeDB Version:** 26.10.2 (the first release with Customizable Contraction Hierarchies), server and client
 **Connectivity:** HTTP API (`arcadedb-network`) and the batch endpoint; `embedded/` uses the Java API
 
 ## Overview
@@ -31,7 +31,7 @@ route-planning/
 ├── queries/
 │   └── queries.sh              # 7 query sections via curl, SQL + Cypher, with timings; one SET pair
 ├── java/
-│   ├── pom.xml                 # arcadedb-network 26.10.1, fat JAR
+│   ├── pom.xml                 # arcadedb-network 26.10.2, fat JAR
 │   └── src/main/java/com/arcadedb/examples/RoutePlanning.java
 ├── embedded/
 │   └── FloridaRoutes.java      # single-file program: GraphBatch Java API load + the same story, embedded
