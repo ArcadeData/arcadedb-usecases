@@ -1,6 +1,6 @@
 services:
   arcadedb:
-    image: arcadedata/arcadedb:26.10.2
+    image: arcadedata/arcadedb:26.11.1
     ports:
       - "2480:2480"
     environment:
