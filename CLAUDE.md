@@ -85,7 +85,6 @@ Every use case follows this exact layout:
 - Edges require vertex endpoints — use VERTEX TYPE (not DOCUMENT TYPE) for types that participate in edges
 - Faceted search (`SELECT ... FACETS`) needs 26.12.1 and a `COLUMNAR` index per faceted property; it projects the record's own
   properties only, so facets over related vertices need a denormalized property (lists use `BY ITEM`). `FACETS` goes before `LIMIT`
-- 26.12.1-SNAPSHOT: the first `FACETS ... LIMIT n` on a freshly opened database returns n-1 rows; facet counts are correct
 - `Neo4jEmbeddingStore` from LangChain4j doesn't work directly (uses `SHOW VECTOR INDEX` DDL); use direct Neo4j driver + `CosineSimilarity` instead
 
 ## CI Workflows

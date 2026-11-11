@@ -138,8 +138,6 @@ echo ""
 echo "=== Query 9: Investigation Triage (Facets) ==="
 echo "Transactions of 400 or more, with merchant, account, amount band and per-day counts for the analyst."
 echo ""
-# Known ArcadeDB 26.12.1-SNAPSHOT issue: the first FACETS query with LIMIT n on a freshly opened
-# database returns n-1 rows (here 4 instead of 5); later runs return n. Facet counts are not affected.
 facet_query "
 SELECT id, account_id, amount, merchant, ts
 FROM Transaction

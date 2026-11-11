@@ -121,8 +121,6 @@ echo ""
 echo "=== Query 6: Faceted Paper Search (Full-Text + Facets) ==="
 echo "Search abstracts for 'graph' and get topic, year and era counts over all matches in one round trip."
 echo ""
-# Known ArcadeDB 26.12.1-SNAPSHOT issue: the first FACETS query with LIMIT n on a freshly opened
-# database returns n-1 rows (here 4 instead of 5); later runs return n. Facet counts are not affected.
 facet_query "
 SELECT id, title, year
 FROM Paper
