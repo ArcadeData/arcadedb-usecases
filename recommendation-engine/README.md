@@ -64,6 +64,30 @@ java -jar target/recommendation-engine.jar
 | 3 | Trending Detection | SQL | Time-series |
 | 4 | Graph Traversal (Streaming) | SQL + MATCH | Graph |
 | 5 | Personalized Category Page | SQL + vectorNeighbors | Vector |
+| 6 | Hybrid Multi-Model Recommendation | Cypher + SQL | Graph + Vector + Time-series |
+| 7 | Faceted Product Catalog | SQL + FACETS | Facets |
+
+### Faceted catalog (Query 7)
+
+> **Faceted search needs ArcadeDB 26.12.1.** Until that release is out, `docker-compose.yml` and
+> `java/pom.xml` point to `26.12.1-SNAPSHOT` (the Docker Hub tag and Maven Central snapshots).
+
+Query 7 is the left-hand panel of a shop page: the product list plus counts per category, price band
+and availability, in one round trip:
+
+```sql
+SELECT name, category, price, inStock FROM Product
+WHERE inStock = true
+FACETS
+  category TERMS,
+  priceBand: price RANGES ([*, 50) AS 'under 50', [50, 200) AS '50-200', [200, 500) AS '200-500', [500, *) AS '500+'),
+  inStock TERMS
+LIMIT 10
+```
+
+Each faceted property has a `COLUMNAR` index. The drill-down selects "Sports" and "under 50"
+with `FILTER`: the rows pass both filters, the category facet still counts the other categories in
+that price band, and the price facet still counts the other bands in Sports.
 
 ## Sample Data
 
@@ -76,7 +100,7 @@ java -jar target/recommendation-engine.jar
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.3.1**. Vector similarity queries use
+This use case targets ArcadeDB **26.12.1** (currently `26.12.1-SNAPSHOT`). Vector similarity queries use
 `vectorNeighbors('IndexName[property]', vector, k)` with an `LSM_VECTOR`
 index. The index name format is `TypeName[propertyName]`.
 

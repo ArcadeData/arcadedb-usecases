@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Recommendation Engine — all five query patterns via curl
+# Recommendation Engine — all seven query patterns via curl
 # Prerequisites: ArcadeDB running, setup.sh already executed, jq installed
 # Usage: ./queries/queries.sh
 
@@ -18,6 +18,15 @@ query() {
     | curl -sf -u "$AUTH" -X POST "$QUERY_URL" \
         -H "Content-Type: application/json" -d @- \
     | jq '.result'
+}
+
+# Faceted search (ArcadeDB 26.12.1+): the response carries "facets" next to "result"
+facet_query() {
+  local cmd="$1"
+  jq -cn --arg c "$cmd" '{"language":"sql","command":$c}' \
+    | curl -sf -u "$AUTH" -X POST "$QUERY_URL" \
+        -H "Content-Type: application/json" -d @- \
+    | jq -e 'if .facets == null then error("response has no facets") else {result, facets} end'
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -130,4 +139,32 @@ FROM ProductInteraction
 WHERE productId IN ['Running Shoes', 'Water Bottle', 'Yoga Mat', 'Tennis Racket']
 GROUP BY productId
 ORDER BY trending_score DESC
+"
+
+# ─────────────────────────────────────────────────────────────────────────────
+echo ""
+echo "=== Query 7: Faceted Product Catalog (Facets) ==="
+echo "In-stock products with category, price band and availability counts in the same response."
+echo ""
+facet_query "
+SELECT name, category, price, inStock
+FROM Product
+WHERE inStock = true
+FACETS
+  category TERMS,
+  priceBand: price RANGES ([*, 50) AS 'under 50', [50, 200) AS '50-200', [200, 500) AS '200-500', [500, *) AS '500+'),
+  inStock TERMS
+LIMIT 10
+"
+
+echo ""
+echo "--- Drill-down: category 'Sports' and price band 'under 50' selected (disjunctive facets) ---"
+echo "Rows pass both filters; each facet ignores its own filter, so the other choices keep their counts."
+facet_query "
+SELECT name, category, price
+FROM Product
+FACETS
+  category TERMS FILTER category = 'Sports',
+  priceBand: price RANGES ([*, 50) AS 'under 50', [50, 200) AS '50-200', [200, 500) AS '200-500', [500, *) AS '500+') FILTER price < 50
+LIMIT 10
 "

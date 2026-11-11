@@ -21,3 +21,7 @@ CREATE PROPERTY ProductInteraction.purchaseCount IF NOT EXISTS LONG;
 CREATE PROPERTY ProductInteraction.ts IF NOT EXISTS DATETIME;
 CREATE INDEX IF NOT EXISTS ON Product (embedding) LSM_VECTOR METADATA { dimensions: 4, similarity: 'COSINE' };
 CREATE INDEX IF NOT EXISTS ON Show (embedding) LSM_VECTOR METADATA { dimensions: 4, similarity: 'COSINE' };
+-- Columnar indexes for faceted search (ArcadeDB 26.12.1+): one per facetable property
+CREATE INDEX IF NOT EXISTS ON Product (category) COLUMNAR;
+CREATE INDEX IF NOT EXISTS ON Product (price) COLUMNAR;
+CREATE INDEX IF NOT EXISTS ON Product (inStock) COLUMNAR;

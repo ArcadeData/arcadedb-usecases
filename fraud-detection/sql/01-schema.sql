@@ -52,3 +52,8 @@ CREATE INDEX IF NOT EXISTS ON Customer (id) UNIQUE;
 CREATE INDEX IF NOT EXISTS ON Transaction (id) UNIQUE;
 CREATE INDEX IF NOT EXISTS ON Customer (profile_embedding) LSM_VECTOR METADATA { dimensions: 8, similarity: 'COSINE' };
 CREATE INDEX IF NOT EXISTS ON Transaction (behavior_embedding) LSM_VECTOR METADATA { dimensions: 8, similarity: 'COSINE' };
+-- Columnar indexes for faceted search (ArcadeDB 26.12.1+): one per facetable property
+CREATE INDEX IF NOT EXISTS ON Transaction (merchant) COLUMNAR;
+CREATE INDEX IF NOT EXISTS ON Transaction (amount) COLUMNAR;
+CREATE INDEX IF NOT EXISTS ON Transaction (ts) COLUMNAR;
+CREATE INDEX IF NOT EXISTS ON Transaction (account_id) COLUMNAR;

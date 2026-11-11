@@ -55,7 +55,7 @@ java -jar target/fraud-detection.jar
 | `Address` | Vertex | `street`, `city`, `zip` |
 | `Email` | Vertex | `address` |
 | `Beneficiary` | Vertex | `id`, `name` |
-| `Transaction` | Vertex | `id`, `amount`, `merchant`, `behavior_embedding`, `ts` |
+| `Transaction` | Vertex | `id`, `account_id`, `amount`, `merchant`, `behavior_embedding`, `ts` |
 | `USES_DEVICE` | Edge | Account → Device |
 | `HAS_PHONE` | Edge | Account → Phone |
 | `HAS_ADDRESS` | Edge | Account → Address |
@@ -76,6 +76,29 @@ java -jar target/fraud-detection.jar
 | 6 | Velocity Attack Detection | SQL | Time-Series |
 | 7 | Correlated Account Activity | SQL | Time-Series |
 | 8 | Cross-Type Investigation | SQL + subquery | Combined |
+| 9 | Investigation Triage | SQL + FACETS | Facets |
+
+### Investigation triage (Query 9)
+
+> **Faceted search needs ArcadeDB 26.12.1.** Until that release is out, `docker-compose.yml` and
+> `java/pom.xml` point to `26.12.1-SNAPSHOT` (the Docker Hub tag and Maven Central snapshots).
+
+Query 9 gives an analyst the transaction list plus where it concentrates: by merchant, by account, by
+amount band (including the band just below the 10k reporting threshold) and per day:
+
+```sql
+SELECT id, account_id, amount, merchant, ts FROM Transaction
+WHERE amount >= 400
+FACETS
+  merchant TERMS TOP 10,
+  account_id TERMS,
+  amountBand: amount RANGES ([*, 1000) AS 'under 1k', [1000, 8000) AS '1k-8k', [8000, 10000) AS '8k-10k (near CTR threshold)', [10000, *) AS '10k+'),
+  perDay: ts HISTOGRAM CALENDAR '1d' TIMEZONE 'UTC'
+LIMIT 5
+```
+
+Each faceted property has a `COLUMNAR` index. The drill-down selects merchant "Transfer" with
+`FILTER`: the rows are the transfers, while the merchant facet keeps counting every merchant.
 
 ## Sample Data
 
@@ -90,7 +113,8 @@ java -jar target/fraud-detection.jar
 
 ## ArcadeDB Version Notes
 
-This use case targets ArcadeDB **26.3.1**. It uses:
+This use case targets ArcadeDB **26.12.1** (currently `26.12.1-SNAPSHOT`). It uses:
+- `SELECT ... FACETS` over `COLUMNAR` indexes for investigation triage
 - `vectorCosineSimilarity()` for behavioral anomaly detection with `LSM_VECTOR` indexes
 - Subquery wrapping for `HAVING`-equivalent filtering (ArcadeDB does not support `HAVING`)
 - Cypher queries for graph traversal and cycle detection

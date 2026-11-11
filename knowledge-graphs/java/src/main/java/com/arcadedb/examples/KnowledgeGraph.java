@@ -1,5 +1,8 @@
 package com.arcadedb.examples;
 
+import com.arcadedb.query.facet.FacetBucket;
+import com.arcadedb.query.facet.FacetResult;
+import com.arcadedb.query.facet.FacetResults;
 import com.arcadedb.query.sql.executor.Result;
 import com.arcadedb.query.sql.executor.ResultSet;
 import com.arcadedb.remote.RemoteDatabase;
@@ -19,6 +22,7 @@ public class KnowledgeGraph {
       tryRun(() -> runQuery3FullTextSearch(db), "Query 3");
       tryRun(() -> runQuery4TrendingPapers(db), "Query 4");
       tryRun(() -> runQuery5GraphRag(db), "Query 5");
+      tryRun(() -> runQuery6FacetedSearch(db), "Query 6");
     }
     System.out.println("\nAll queries complete.");
   }
@@ -186,6 +190,72 @@ public class KnowledgeGraph {
             r.getProperty("topic"),
             r.getProperty("connections"));
       }
+    }
+  }
+
+  // Query 6: Faceted Paper Search — Full-Text + FACETS (SQL, ArcadeDB 26.12.1+)
+  private static void runQuery6FacetedSearch(RemoteDatabase db) {
+    printHeader("Query 6: Faceted Paper Search (Full-Text + Facets)",
+        "Search abstracts for 'graph' and count topics, years and eras over all matches in one round trip.");
+
+    String sql =
+        """
+            SELECT id, title, year
+             FROM Paper
+             WHERE SEARCH_INDEX('Paper[abstract]', 'graph') = true
+             FACETS
+               topics TERMS TOP 10,
+               year TERMS ORDER BY VALUE ASC,
+               era: year RANGES ([*, 2023) AS 'before 2023', [2023, *) AS '2023 and later')
+             LIMIT 5""";
+
+    try (ResultSet rs = db.query("sql", sql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-5s | %d | %s%n",
+            r.getProperty("id"),
+            ((Number) r.getProperty("year")).intValue(),
+            r.getProperty("title"));
+      }
+      printFacets(rs.getFacets());
+    }
+
+    System.out.println("\n  --- Drill-down: 'Machine Learning' and year >= 2023 selected (disjunctive facets) ---");
+    String drillDown =
+        """
+            SELECT id, title, year
+             FROM Paper
+             FACETS
+               topics TERMS TOP 10 FILTER 'Machine Learning' IN topics,
+               year TERMS ORDER BY VALUE ASC FILTER year >= 2023
+             LIMIT 10""";
+
+    try (ResultSet rs = db.query("sql", drillDown)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-5s | %d | %s%n",
+            r.getProperty("id"),
+            ((Number) r.getProperty("year")).intValue(),
+            r.getProperty("title"));
+      }
+      printFacets(rs.getFacets());
+    }
+  }
+
+  // Prints the facets of a SELECT ... FACETS query: terms buckets carry a value, ranges and histograms a key
+  private static void printFacets(FacetResults facets) {
+    if (facets == null) {
+      System.out.println("  (no facets returned)");
+      return;
+    }
+    System.out.printf("  facets: exact=%s patched=%d lagMs=%d%n", facets.exact(), facets.patched(), facets.lagMs());
+    for (String alias : facets.aliases()) {
+      FacetResult facet = facets.get(alias);
+      System.out.printf("  [%s] (%s)%n", alias, facet.kind());
+      // A TERMS bucket is identified by its value (string, number, boolean); a RANGES or HISTOGRAM bucket by its key
+      // (the range label or the bucket start), and its value() is null
+      for (FacetBucket b : facet.buckets())
+        System.out.printf("    %-32s %d%n", b.key() != null ? b.key() : String.valueOf(b.value()), b.count());
     }
   }
 
