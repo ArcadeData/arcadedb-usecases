@@ -1,5 +1,8 @@
 package com.arcadedb.examples;
 
+import com.arcadedb.query.facet.FacetBucket;
+import com.arcadedb.query.facet.FacetResult;
+import com.arcadedb.query.facet.FacetResults;
 import com.arcadedb.query.sql.executor.Result;
 import com.arcadedb.query.sql.executor.ResultSet;
 import com.arcadedb.remote.RemoteDatabase;
@@ -21,6 +24,7 @@ public class FraudDetection {
       tryRun(() -> runQuery5BehavioralAnomaly(db), "Query 5");
       tryRun(() -> runQuery6VelocityAttack(db), "Query 6");
       tryRun(() -> runQuery7CorrelatedActivity(db), "Query 7");
+      tryRun(() -> runQuery9InvestigationTriage(db), "Query 9");
       tryRun(() -> runQuery8MultiModel(db), "Query 8");
     }
     System.out.println("\nAll queries complete.");
@@ -225,6 +229,73 @@ public class FraudDetection {
             r.getProperty("id"),
             r.getProperty("name"));
       }
+    }
+  }
+
+  // Query 9: Investigation Triage — FACETS (SQL, ArcadeDB 26.12.1+)
+  private static void runQuery9InvestigationTriage(RemoteDatabase db) {
+    printHeader("Query 9: Investigation Triage (Facets)",
+        "Transactions of 400 or more, with merchant, account, amount band and per-day counts.");
+
+    String sql =
+        """
+            SELECT id, account_id, amount, merchant, ts
+             FROM Transaction
+             WHERE amount >= 400
+             FACETS
+               merchant TERMS TOP 10,
+               account_id TERMS,
+               amountBand: amount RANGES ([*, 1000) AS 'under 1k', [1000, 8000) AS '1k-8k', [8000, 10000) AS '8k-10k (near CTR threshold)', [10000, *) AS '10k+'),
+               perDay: ts HISTOGRAM CALENDAR '1d' TIMEZONE 'UTC'
+             LIMIT 5""";
+
+    try (ResultSet rs = db.query("sql", sql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-10s | %-8s | %9.2f | %s%n",
+            r.getProperty("id"),
+            r.getProperty("account_id"),
+            ((Number) r.getProperty("amount")).doubleValue(),
+            r.getProperty("merchant"));
+      }
+      printFacets(rs.getFacets());
+    }
+
+    System.out.println("\n  --- Drill-down: merchant 'Transfer' selected (disjunctive facets) ---");
+    String drillDown =
+        """
+            SELECT id, account_id, amount, merchant
+             FROM Transaction
+             FACETS
+               merchant TERMS TOP 5 FILTER merchant = 'Transfer',
+               account_id TERMS
+             LIMIT 10""";
+
+    try (ResultSet rs = db.query("sql", drillDown)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-10s | %-8s | %9.2f | %s%n",
+            r.getProperty("id"),
+            r.getProperty("account_id"),
+            ((Number) r.getProperty("amount")).doubleValue(),
+            r.getProperty("merchant"));
+      }
+      printFacets(rs.getFacets());
+    }
+  }
+
+  // Prints the facets of a SELECT ... FACETS query: terms buckets carry a value, ranges and histograms a key
+  private static void printFacets(FacetResults facets) {
+    if (facets == null) {
+      System.out.println("  (no facets returned)");
+      return;
+    }
+    System.out.printf("  facets: exact=%s patched=%d lagMs=%d%n", facets.exact(), facets.patched(), facets.lagMs());
+    for (String alias : facets.aliases()) {
+      FacetResult facet = facets.get(alias);
+      System.out.printf("  [%s] (%s)%n", alias, facet.kind());
+      for (FacetBucket b : facet.buckets())
+        System.out.printf("    %-32s %d%n", b.key() != null ? b.key() : String.valueOf(b.value()), b.count());
     }
   }
 

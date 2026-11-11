@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Knowledge Graph — all five query patterns via curl
+# Knowledge Graph — all six query patterns via curl
 # Prerequisites: ArcadeDB running, setup.sh already executed, jq installed
 # Usage: ./queries/queries.sh
 
@@ -18,6 +18,15 @@ query() {
     | curl -sf -u "$AUTH" -X POST "$QUERY_URL" \
         -H "Content-Type: application/json" -d @- \
     | jq '.result'
+}
+
+# Faceted search (ArcadeDB 26.12.1+): the response carries "facets" next to "result"
+facet_query() {
+  local cmd="$1"
+  jq -cn --arg c "$cmd" '{"language":"sql","command":$c}' \
+    | curl -sf -u "$AUTH" -X POST "$QUERY_URL" \
+        -H "Content-Type: application/json" -d @- \
+    | jq '{result, facets}'
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -105,4 +114,32 @@ FROM (
 GROUP BY topic
 ORDER BY connections DESC
 LIMIT 5
+"
+
+# ─────────────────────────────────────────────────────────────────────────────
+echo ""
+echo "=== Query 6: Faceted Paper Search (Full-Text + Facets) ==="
+echo "Search abstracts for 'graph' and get topic, year and era counts over all matches in one round trip."
+echo ""
+facet_query "
+SELECT id, title, year
+FROM Paper
+WHERE SEARCH_INDEX('Paper[abstract]', 'graph') = true
+FACETS
+  topics TERMS TOP 10,
+  year TERMS ORDER BY VALUE ASC,
+  era: year RANGES ([*, 2023) AS 'before 2023', [2023, *) AS '2023 and later')
+LIMIT 5
+"
+
+echo ""
+echo "--- Drill-down: topic 'Machine Learning' and year >= 2023 selected (disjunctive facets) ---"
+echo "Rows pass both filters; each facet ignores its own filter, so the other choices keep their counts."
+facet_query "
+SELECT id, title, year, topics
+FROM Paper
+FACETS
+  topics TERMS TOP 10 FILTER 'Machine Learning' IN topics,
+  year TERMS ORDER BY VALUE ASC FILTER year >= 2023
+LIMIT 10
 "

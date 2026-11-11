@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fraud Detection — all eight query patterns via curl
+# Fraud Detection — all nine query patterns via curl
 # Prerequisites: ArcadeDB running, setup.sh already executed, jq installed
 # Usage: ./queries/queries.sh
 
@@ -18,6 +18,15 @@ query() {
     | curl -sf -u "$AUTH" -X POST "$QUERY_URL" \
         -H "Content-Type: application/json" -d @- \
     | jq '.result'
+}
+
+# Faceted search (ArcadeDB 26.12.1+): the response carries "facets" next to "result"
+facet_query() {
+  local cmd="$1"
+  jq -cn --arg c "$cmd" '{"language":"sql","command":$c}' \
+    | curl -sf -u "$AUTH" -X POST "$QUERY_URL" \
+        -H "Content-Type: application/json" -d @- \
+    | jq '{result, facets}'
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -122,4 +131,33 @@ query "sql" "
 SELECT id, name
 FROM Account
 WHERE id IN (SELECT id FROM Customer WHERE recent_behavior IN ['suspicious', 'anomalous'])
+"
+
+# ─────────────────────────────────────────────────────────────────────────────
+echo ""
+echo "=== Query 9: Investigation Triage (Facets) ==="
+echo "Transactions of 400 or more, with merchant, account, amount band and per-day counts for the analyst."
+echo ""
+facet_query "
+SELECT id, account_id, amount, merchant, ts
+FROM Transaction
+WHERE amount >= 400
+FACETS
+  merchant TERMS TOP 10,
+  account_id TERMS,
+  amountBand: amount RANGES ([*, 1000) AS 'under 1k', [1000, 8000) AS '1k-8k', [8000, 10000) AS '8k-10k (near CTR threshold)', [10000, *) AS '10k+'),
+  perDay: ts HISTOGRAM CALENDAR '1d' TIMEZONE 'UTC'
+LIMIT 5
+"
+
+echo ""
+echo "--- Drill-down: merchant 'Transfer' selected (disjunctive facets) ---"
+echo "Rows are the transfers; the merchant facet still counts every merchant so the analyst can switch."
+facet_query "
+SELECT id, account_id, amount, merchant
+FROM Transaction
+FACETS
+  merchant TERMS TOP 5 FILTER merchant = 'Transfer',
+  account_id TERMS
+LIMIT 10
 "

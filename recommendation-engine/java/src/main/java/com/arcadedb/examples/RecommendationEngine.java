@@ -1,5 +1,8 @@
 package com.arcadedb.examples;
 
+import com.arcadedb.query.facet.FacetBucket;
+import com.arcadedb.query.facet.FacetResult;
+import com.arcadedb.query.facet.FacetResults;
 import com.arcadedb.query.sql.executor.Result;
 import com.arcadedb.query.sql.executor.ResultSet;
 import com.arcadedb.remote.RemoteDatabase;
@@ -19,6 +22,7 @@ public class RecommendationEngine {
       tryRun(() -> runQuery3Trending(db), "Query 3");
       tryRun(() -> runQuery4StreamingHybrid(db), "Query 4");
       tryRun(() -> runQuery5EcommerceCategory(db), "Query 5");
+      tryRun(() -> runQuery7FacetedCatalog(db), "Query 7");
       tryRun(() -> runQuery6HybridMultiModel(db), "Query 6");
     }
     System.out.println("\nAll queries complete.");
@@ -232,6 +236,70 @@ public class RecommendationEngine {
             r.getProperty("productId"),
             r.getProperty("trending_score"));
       }
+    }
+  }
+
+  // Query 7: Faceted Product Catalog — FACETS (SQL, ArcadeDB 26.12.1+)
+  private static void runQuery7FacetedCatalog(RemoteDatabase db) {
+    printHeader("Query 7: Faceted Product Catalog (Facets)",
+        "In-stock products with category, price band and availability counts in the same response.");
+
+    String sql =
+        """
+            SELECT name, category, price, inStock
+             FROM Product
+             WHERE inStock = true
+             FACETS
+               category TERMS,
+               priceBand: price RANGES ([*, 50) AS 'under 50', [50, 200) AS '50-200', [200, 500) AS '200-500', [500, *) AS '500+'),
+               inStock TERMS
+             LIMIT 10""";
+
+    try (ResultSet rs = db.query("sql", sql)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-15s | %-12s | %8.2f%n",
+            r.getProperty("name"),
+            r.getProperty("category"),
+            ((Number) r.getProperty("price")).doubleValue());
+      }
+      printFacets(rs.getFacets());
+    }
+
+    System.out.println("\n  --- Drill-down: 'Sports' and 'under 50' selected (disjunctive facets) ---");
+    String drillDown =
+        """
+            SELECT name, category, price
+             FROM Product
+             FACETS
+               category TERMS FILTER category = 'Sports',
+               priceBand: price RANGES ([*, 50) AS 'under 50', [50, 200) AS '50-200', [200, *) AS '200+') FILTER price < 50
+             LIMIT 10""";
+
+    try (ResultSet rs = db.query("sql", drillDown)) {
+      while (rs.hasNext()) {
+        Result r = rs.next();
+        System.out.printf("  %-15s | %-12s | %8.2f%n",
+            r.getProperty("name"),
+            r.getProperty("category"),
+            ((Number) r.getProperty("price")).doubleValue());
+      }
+      printFacets(rs.getFacets());
+    }
+  }
+
+  // Prints the facets of a SELECT ... FACETS query: terms buckets carry a value, ranges and histograms a key
+  private static void printFacets(FacetResults facets) {
+    if (facets == null) {
+      System.out.println("  (no facets returned)");
+      return;
+    }
+    System.out.printf("  facets: exact=%s patched=%d lagMs=%d%n", facets.exact(), facets.patched(), facets.lagMs());
+    for (String alias : facets.aliases()) {
+      FacetResult facet = facets.get(alias);
+      System.out.printf("  [%s] (%s)%n", alias, facet.kind());
+      for (FacetBucket b : facet.buckets())
+        System.out.printf("    %-32s %d%n", b.key() != null ? b.key() : String.valueOf(b.value()), b.count());
     }
   }
 
