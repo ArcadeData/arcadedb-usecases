@@ -24,8 +24,8 @@ public class FraudDetection {
       tryRun(() -> runQuery5BehavioralAnomaly(db), "Query 5");
       tryRun(() -> runQuery6VelocityAttack(db), "Query 6");
       tryRun(() -> runQuery7CorrelatedActivity(db), "Query 7");
-      tryRun(() -> runQuery9InvestigationTriage(db), "Query 9");
       tryRun(() -> runQuery8MultiModel(db), "Query 8");
+      tryRun(() -> runQuery9InvestigationTriage(db), "Query 9");
     }
     System.out.println("\nAll queries complete.");
   }
@@ -294,6 +294,8 @@ public class FraudDetection {
     for (String alias : facets.aliases()) {
       FacetResult facet = facets.get(alias);
       System.out.printf("  [%s] (%s)%n", alias, facet.kind());
+      // A TERMS bucket is identified by its value (string, number, boolean); a RANGES or HISTOGRAM bucket by its key
+      // (the range label or the bucket start), and its value() is null
       for (FacetBucket b : facet.buckets())
         System.out.printf("    %-32s %d%n", b.key() != null ? b.key() : String.valueOf(b.value()), b.count());
     }

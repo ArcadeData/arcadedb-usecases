@@ -10,13 +10,13 @@ A collection of self-contained projects demonstrating [ArcadeDB](https://arcaded
 
 | Directory | Database Name | ArcadeDB Version | Java | Connectivity |
 |-----------|--------------|------------------|------|-------------|
-| `recommendation-engine/` | `RecommendationEngine` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
-| `knowledge-graphs/` | `KnowledgeGraph` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
-| `graph-rag/` | `GraphRAG` | 26.3.1 | 21 | Bolt (`neo4j-java-driver`) + LangChain4j |
-| `fraud-detection/` | `FraudDetection` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) |
-| `supply-chain/` | `SupplyChain` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`pg`) |
-| `iam/` | `IAM` | 26.3.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`psycopg`) |
-| `feature-store/` | `FeatureStore` | 26.4.2 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`pg`) |
+| `recommendation-engine/` | `RecommendationEngine` | 26.12.1-SNAPSHOT | 21 | HTTP API (`arcadedb-network`) |
+| `knowledge-graphs/` | `KnowledgeGraph` | 26.12.1-SNAPSHOT | 21 | HTTP API (`arcadedb-network`) |
+| `graph-rag/` | `GraphRAG` | 26.11.1 | 21 | Bolt (`neo4j-java-driver`) + LangChain4j |
+| `fraud-detection/` | `FraudDetection` | 26.12.1-SNAPSHOT | 21 | HTTP API (`arcadedb-network`) |
+| `supply-chain/` | `SupplyChain` | 26.11.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`pg`) |
+| `iam/` | `IAM` | 26.11.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`psycopg`) |
+| `feature-store/` | `FeatureStore` | 26.11.1 | 21 | HTTP API (`arcadedb-network`) + PostgreSQL (`pg`) |
 | `route-planning/` | `RoutePlanning` | 26.10.2 | 21 | HTTP API (`arcadedb-network`) + batch endpoint; `embedded/` single-file GraphBatch loader |
 
 ## Directory Structure (per use case)
@@ -57,7 +57,8 @@ Every use case follows this exact layout:
 ### queries.sh Pattern
 - Same env vars as setup.sh
 - `query()` helper: takes `(language, command)`, POSTs to `/api/v1/query/<DB>`, pipes through `jq '.result'`
-- Five labeled sections with echo headers, each calling `query "sql"` or `query "cypher"`
+- Labeled `=== Query N: ... ===` sections with echo headers, each calling `query "sql"` or `query "cypher"`
+- Faceted queries use `facet_query()`, which prints `{result, facets}` and fails when `facets` is missing
 
 ### Java Pattern
 - Package: `com.arcadedb.examples`
@@ -82,6 +83,9 @@ Every use case follows this exact layout:
 - Cypher doesn't resolve parent type labels to subtypes (e.g., `:Entity` won't match `Person`)
 - ArcadeDB Bolt protocol implements protocol v4; Neo4j driver 5.x fails handshake — use `neo4j-java-driver:4.4.12`
 - Edges require vertex endpoints — use VERTEX TYPE (not DOCUMENT TYPE) for types that participate in edges
+- Faceted search (`SELECT ... FACETS`) needs 26.12.1 and a `COLUMNAR` index per faceted property; it projects the record's own
+  properties only, so facets over related vertices need a denormalized property (lists use `BY ITEM`). `FACETS` goes before `LIMIT`
+- 26.12.1-SNAPSHOT: the first `FACETS ... LIMIT n` on a freshly opened database returns n-1 rows; facet counts are correct
 - `Neo4jEmbeddingStore` from LangChain4j doesn't work directly (uses `SHOW VECTOR INDEX` DDL); use direct Neo4j driver + `CosineSimilarity` instead
 
 ## CI Workflows

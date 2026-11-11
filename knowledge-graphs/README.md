@@ -88,6 +88,8 @@ LIMIT 5
 ```
 
 Facets read a `COLUMNAR` index per property (`CREATE INDEX ON Paper (topics BY ITEM) COLUMNAR`).
+A `COLUMNAR` index projects properties of the record itself, so `Paper.topics` is a deliberate
+denormalization of the `COVERS` edges (topic names); `02-data.sql` keeps the two in sync by hand.
 The second part of the query shows disjunctive facets: with `FILTER` on a facet, the rows pass every
 filter, while each facet counts as if its own filter were not applied, so the other values keep
 their counts. Over HTTP the facets come back in a `facets` object next to `result`; in Java,

@@ -26,7 +26,7 @@ facet_query() {
   jq -cn --arg c "$cmd" '{"language":"sql","command":$c}' \
     | curl -sf -u "$AUTH" -X POST "$QUERY_URL" \
         -H "Content-Type: application/json" -d @- \
-    | jq '{result, facets}'
+    | jq -e 'if .facets == null then error("response has no facets") else {result, facets} end'
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -165,6 +165,6 @@ SELECT name, category, price
 FROM Product
 FACETS
   category TERMS FILTER category = 'Sports',
-  priceBand: price RANGES ([*, 50) AS 'under 50', [50, 200) AS '50-200', [200, *) AS '200+') FILTER price < 50
+  priceBand: price RANGES ([*, 50) AS 'under 50', [50, 200) AS '50-200', [200, 500) AS '200-500', [500, *) AS '500+') FILTER price < 50
 LIMIT 10
 "

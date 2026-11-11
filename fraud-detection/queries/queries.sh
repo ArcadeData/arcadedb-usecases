@@ -26,7 +26,7 @@ facet_query() {
   jq -cn --arg c "$cmd" '{"language":"sql","command":$c}' \
     | curl -sf -u "$AUTH" -X POST "$QUERY_URL" \
         -H "Content-Type: application/json" -d @- \
-    | jq '{result, facets}'
+    | jq -e 'if .facets == null then error("response has no facets") else {result, facets} end'
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -138,6 +138,8 @@ echo ""
 echo "=== Query 9: Investigation Triage (Facets) ==="
 echo "Transactions of 400 or more, with merchant, account, amount band and per-day counts for the analyst."
 echo ""
+# Known ArcadeDB 26.12.1-SNAPSHOT issue: the first FACETS query with LIMIT n on a freshly opened
+# database returns n-1 rows (here 4 instead of 5); later runs return n. Facet counts are not affected.
 facet_query "
 SELECT id, account_id, amount, merchant, ts
 FROM Transaction
