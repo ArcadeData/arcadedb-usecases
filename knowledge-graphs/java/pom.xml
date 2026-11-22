@@ -13,8 +13,22 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <arcadedb.version>26.11.1</arcadedb.version>
+    <arcadedb.version>26.12.1-SNAPSHOT</arcadedb.version>
   </properties>
+
+  <!-- Faceted search ships in ArcadeDB 26.12.1: until the release, resolve the -SNAPSHOT from Maven Central snapshots -->
+  <repositories>
+    <repository>
+      <id>central-snapshots</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
